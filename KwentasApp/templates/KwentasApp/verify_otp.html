@@ -1,0 +1,184 @@
+{%load static%}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify OTP</title>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', Arial, sans-serif;
+            background-color: #e9ecef;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;  /* Prevent scrolling when SweetAlert is shown */
+            height: 100vh;
+        }
+
+        .card {
+            background-color: #fff;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            max-width: 900px;
+            width: 100%;
+            padding: 80px 60px;
+            text-align: center;
+            position: relative;  /* Make sure it's relative to its container */
+            z-index: 1;  /* Keep the card below SweetAlert */
+            position: absolute;
+            top: 50%;   /* Centers the card vertically */
+            left: 50%;  /* Centers the card horizontally */
+            transform: translate(-50%, -50%);  /* Fine-tunes the centering */        }
+
+        .card img {
+            max-width: 150px; /* Set a max-width for the logo */
+            margin-bottom: 30px; /* Space below the logo */
+        }
+
+        .card h2 {
+            margin-bottom: 40px;
+            color: #343a40;
+            font-size: 36px;
+            font-weight: 600;
+        }
+
+        .form-group {
+            margin-bottom: 30px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: left;
+        }
+
+        .form-group label {
+            margin-bottom: 10px;
+            font-size: 20px;
+            font-weight: 500;
+            color: #6c757d;
+        }
+
+        .form-group input {
+            width: 100%;
+            max-width: 400px;
+            padding: 12px;
+            font-size: 18px;
+            border: 1px solid #ced4da;
+            border-radius: 8px;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+            appearance: textfield;
+        }
+
+        input[type="number"]::-webkit-outer-spin-button,
+        input[type="number"]::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        input[type="number"] {
+            -moz-appearance: textfield;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #80bdff;
+            box-shadow: 0 0 8px rgba(0, 123, 255, 0.25);
+        }
+
+        .form-group button {
+            width: 100%;
+            max-width: 400px;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            background-color: #007FFF;
+            color: white;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+
+        .form-group button:hover {
+            background-color: #0056b3;
+            transform: scale(1.05);
+        }
+
+        @media (max-width: 600px) {
+            .card {
+                padding: 40px 20px;
+            }
+
+            .card h2 {
+                font-size: 28px;
+            }
+
+            .form-group input, .form-group button {
+                padding: 10px;
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <img src="{% static 'KwentasApp/img/logo.png' %}" alt="Logo"> <!-- Add your logo path here -->
+        <h2>Before we proceed</h2>
+        <form method="POST">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="otp">Enter your 6-digit OTP Code from Google authenticator:</label>
+                <input type="number" name="otp" id="otp" maxlength="7" required placeholder="XXXXXX" oninput="formatOTP(this)">
+            </div>
+            <div class="form-group">
+                <button type="submit">Verify</button>
+            </div>
+        </form>
+    </div>
+</body>
+
+{% if messages %}
+    {% for message in messages %}
+        <script type="text/javascript">
+            document.addEventListener('DOMContentLoaded', function() {
+                // Create an array to hold messages
+                var messages = [];
+
+                // Push each message into the array
+                messages.push({
+                    'tag': '{{ message.tags|escapejs }}',
+                    'text': '{{ message|escapejs }}'
+                });
+
+                // Iterate through the messages array and display SweetAlert
+                messages.forEach(function(message) {
+                    if (message.tag === 'error') {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Oops...',
+                            text: message.text,
+                            confirmButtonColor: '#3085d6'
+                        });
+                    } else if (message.tag === 'success') {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Success!',
+                            text: message.text,
+                            confirmButtonColor: '#3085d6'
+                        });
+                    }
+                });
+            });
+        </script>
+    {% endfor %}
+{% endif %}
+
+</html>

@@ -1,0 +1,608 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
+:root {
+    --light: #f6f6f9;
+    --primary: #1976D2;
+    --light-primary: #CFE8FF;
+    --grey: #eee;
+    --dark-grey: #AAAAAA;
+    --dark: #363949;
+    --danger: #D32F2F;
+    --light-danger: #FECDD3;
+    --warning: #FBC02D;
+    --light-warning: #FFF2C6;
+    --success: #388E3C;
+    --light-success: #BBF7D0;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
+}
+
+.bx {
+    font-size: 1.7rem;
+}
+
+a {
+    text-decoration: none;
+}
+
+li {
+    list-style: none;
+}
+
+html {
+    overflow-x: hidden;
+}
+
+body {
+    background: var(--grey);
+    overflow-x: hidden;
+}
+#monthly, #below, #above {
+    display: none;
+}
+
+.content {
+    position: relative;
+    width: 100%;
+    left: 0;
+    transition: all 0.3s ease;
+}
+
+.content main {
+    margin-top: 50px;
+    padding: 0 24px;
+}
+
+
+.bottom-data {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px; /* Adjust as necessary */
+}
+
+
+.content main .header {
+    display: flex;
+    align-items: center;
+    grid-gap: 24px;
+    margin-bottom: 24px;
+}
+
+.content main .header .left {
+    flex-grow: 1;
+}
+
+.content main .header .left h1 {
+    font-size: 36px; /* Adjust the font size as needed */
+    color: var(--dark);
+}
+
+.content main .header .report {
+    display: flex;
+    align-items: center;
+    grid-gap: 8px;
+    padding: 8px 16px;
+    background: var(--primary);
+    color: var(--light);
+    border-radius: 24px;
+}
+
+.content main .header .report:hover {
+    box-shadow: 0 4px 8px var(--primary);
+    transition: all 0.3s ease;
+}
+
+.content main .insights {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    grid-gap: 24px;
+    margin-bottom: 24px;
+}
+
+ul.insights li {
+    list-style: none;
+    display: inline-block;
+    padding: 20px;
+    margin: 10px;
+    background-color: #f0f0f0; /* Initial background color */
+    border-radius: 8px;
+    transition: background-color 0.3s, transform 0.3s;
+    cursor: pointer;
+}
+
+ul.insights li:hover {
+    background-color: #e0e0e0; /* Background color on hover */
+}
+
+ul.insights li i {
+    font-size: 24px;
+    margin-bottom: 10px;
+    display: block;
+}
+
+ul.insights li .info h3 {
+    font-size: 22px;
+    margin: 0;
+}
+
+ul.insights li .info p {
+    font-size: 16px;
+    margin: 5px 0 0;
+}
+
+
+.content main .insights li {
+    padding: 16px;
+    background: var(--light);
+    display: flex;
+    align-items: center;
+    grid-gap: 24px;
+    border-radius: 16px;
+    box-shadow: 0 4px 8px var(--grey);
+    cursor: pointer;
+}
+
+.content main .insights li:hover {
+    box-shadow: 0 8px 16px var(--grey);
+    transition: all 0.3s ease;
+}
+
+.content main .insights li i {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 24px;
+}
+
+.content main .insights li .info h3 {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--dark);
+}
+
+.content main .insights li .info p {
+    color: var(--dark-grey);
+}
+
+.content main .insights li:nth-child(1) i {
+    background: var(--light-primary);
+    color: var(--primary);
+}
+
+.content main .insights li:nth-child(2) i {
+    background: var(--light-warning);
+    color: var(--warning);
+}
+
+.content main .insights li:nth-child(3) i {
+    background: var(--light-success);
+    color: var(--success);
+}
+
+.content main .insights li:nth-child(4) i {
+    background: var(--light-danger);
+    color: var(--danger);
+}
+.content main .bottom-data {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: stretch; /* Ensures all cards stretch to the same height */
+}
+
+
+.content main .bottom-data .card.half-width-card {
+    grid-column: span 1; /* Ensure the card spans 1 column */
+}
+
+.content main .bottom-data .card.big-card {
+    grid-column: span 2; /* Ensure the card spans 2 columns */
+}
+
+.content main .bottom-data .card {
+    background: var(--light);
+    border-radius: 16px;
+    padding: 16px;
+    box-shadow: 0 4px 8px var(--grey);
+    flex: 1 1 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    color: var(--dark);
+    min-height: 500px; /* This allows the card to expand beyond the minimum size */
+    height: auto; /* Allows the card to grow based on content */
+}
+
+.content main .bottom-data .card p{
+    align-self: center;
+}
+
+.content main .bottom-data .card:hover h3 {
+    color: var(--primary); /* Change text color of h3 on hover */
+}
+
+.content main .bottom-data .card .header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    margin-bottom: 16px;
+}
+
+.content main .bottom-data .card canvas {
+    width: 100%;
+    max-width: 700px;
+    align-self: center;
+}
+
+@media screen and (max-width: 1600px) and (min-width: 1025px) {
+    .content main .bottom-data {
+        grid-template-columns: repeat(2, 1fr); /* Two columns for screens between 1025px and 1600px */
+    }
+}
+
+@media screen and (max-width: 1024px) {
+    .content main .bottom-data {
+        grid-template-columns: 1fr; /* Stack cards vertically */
+    }
+}
+
+@media screen and (max-width: 1024px) {
+    .bottom-data {
+        flex-direction: column;
+    }
+
+    .left-column,
+    .right-column {
+        flex: 1 1 100%;
+    }
+
+    .half-width-card,
+    .big-card,
+    .card {
+        width: 100%;
+    }
+}
+
+/* Adjustments for even smaller screens */
+@media screen and (max-width: 768px) {
+    .content main .bottom-data {
+        grid-template-columns: 1fr;
+        grid-gap: 16px;
+    }
+
+    .content main .header h1 {
+        font-size: 28px;
+    }
+}
+
+canvas {
+    width: 100% !important;
+    height: auto !important;
+}
+
+
+
+@media screen and (max-width: 768px) {
+    .left-column, .right-column {
+        width: 100%; /* Full width for both columns on smaller screens */
+    }
+
+    .half-width-card {
+        flex: 1 1 calc(50% - 24px); /* Two cards per row */
+        width: calc(50% - 24px); /* Two cards per row */
+        margin: 0 0 24px 0; /* Adjusted margin for smaller screens */
+    }
+
+    .big-card {
+        flex: 1 1 100%; /* Full width on smaller screens */
+        width: 100%; /* Full width on smaller screens */
+        margin-left: 0; /* Reset margin for full width */
+    }
+}
+
+@media screen and (min-width: 770px) and (max-width: 1600px) {
+    .content main .bottom-data .card.half-width-card,
+    .content main .bottom-data .card.big-card {
+        grid-column: span 1; /* Ensure both cards span 1 column */
+        width: 100%; /* Ensure both cards take full width */
+        margin-left: auto; /* Reset any custom margin */
+    }
+}
+
+@media screen and (min-width: 1026px) and (max-width: 1600px) {
+    .content main .bottom-data .card.big-card {
+        grid-column: span 2; /* Ensure the big card spans 2 columns */
+        width: calc(145% + 24px); /* Adjusted width to avoid overlap */
+        margin-left: calc(-50% + 12px); /* Adjusted margin to center the big card */
+    }
+
+    .content main .bottom-data .card.half-width-card {
+        grid-column: span 1; /* Ensure the half-width card spans 1 column */
+        width: calc(50% - 12px); /* Adjusted width for the half-width card */
+    }
+}
+
+
+.project-list {
+    max-height: 400px;
+    overflow-y: scroll;
+    display: flex;
+    flex-wrap: wrap; /* Allows wrapping of items to the next line */
+    gap: 20px; /* Space between items */
+    
+}
+
+.project-item {
+    display: flex;
+    flex-direction: column; /* Stack children vertically */
+    margin-bottom: 20px; /* Space between project items */
+    padding: 10px;
+    border: 1px solid #ccc; /* Optional border for visibility */
+    border-radius: 5px;
+    width: 48%; /* Set width to 48% to allow two items per row, accounting for gap */
+    background-color: #f9f9f9; /* Light background for each item */
+    cursor: pointer;
+}
+.project-entry h2, .project-entry p {
+    margin: 0;
+    padding: 5px 0; 
+}
+
+@media screen and (max-width: 768px) {
+    .user-list {
+        grid-template-columns: 1fr; /* Stack items vertically on smaller screens */
+    }
+}
+@media screen and (max-width: 768px) {
+    .user-list {
+        grid-template-columns: 1fr; /* Stack items vertically on smaller screens */
+    }
+}
+
+.btn {
+    padding: 0.9rem 1.9rem;  /* Increased padding */
+    background-color: #007FFF            ;
+    border: 2px solid #fafafa;
+    font-size: 1.1rem;  /* Increased font size */
+    color: white;
+    line-height: 1;
+    border-radius: 25px;
+    outline: none;
+    cursor: pointer;
+    transition: 0.3s;
+    margin: 0;
+    transition: transform 0.3s ease;
+  }
+  
+  .btn:hover {
+    transform: scale(1.15); /* Scale up on hover */
+  }
+  
+  .sticky-btn {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 1000;
+    width: 7.5rem;
+    height: 2.9rem;
+    font-weight: 700;
+    border-radius: 2rem;
+    transition: 0.2s ease-in-out;
+    background-color: #007bff; /* Blue color */
+    color: white;
+    border: 2px solid #007bff; /* Same as background color */
+
+  }
+  
+  @media (max-width: 480px) {
+    .sticky-btn {
+      bottom: 10px;
+      right: 10px;
+      padding: 0.6rem 1.2rem;  /* Adjusted padding for mobile */
+      font-size: 1rem;  /* Adjusted font size for mobile */
+    }
+  }
+
+  .card {
+    flex: 1; /* Makes each card take equal width */
+    display: flex;
+    flex-direction: column;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    height: 100%; /* Allow the cards to expand to their container height */
+    overflow: hidden;
+}
+
+#below, #above {
+    height: 640px; /* Set a fixed height for both cards */
+    overflow: hidden; /* Prevents overflow from breaking layout */
+}
+
+.card .header {
+    display: flex;
+    align-items: center;
+    grid-gap: 8px;
+    margin-bottom: 16px;
+}
+
+.card .accordion {
+    overflow-y: auto; /* Allows the accordion to scroll when content is too long */
+    max-height: calc(100% - 60px); /* Adjust this value based on the height of the header */
+}
+
+.card {
+    background: var(--light);
+    border-radius: 16px;
+    padding: 16px;
+    box-shadow: 0 4px 8px var(--grey);
+    color: var(--dark);
+    margin-bottom: 24px; /* Adjust as needed */
+}
+
+.card .header {
+    display: flex;
+    align-items: center;
+    grid-gap: 8px;
+    margin-bottom: 16px;
+}
+/* Accordion Container */
+/* Accordion Container */
+.accordion {
+    width: 80%; /* Adjusted width to make it smaller */
+    max-height: 500px;
+    overflow-y: scroll;
+    margin: 0 auto; /* Centers the accordion */
+}
+
+/* Accordion Content */
+.accordion .accordion-content {
+    margin: 15px 0;
+    border-radius: 4px;
+    background: #FFF7F0;
+    border: 1px solid #FFD6B3;
+    overflow: hidden;
+    transition: padding 0.2s linear;
+}
+
+/* Styles for content with utilization below 20% */
+.accordion-content.red {
+    background-color: #FFE5E5; /* Smooth/Cool red background */
+    border-color: #FF9999; /* Slightly darker red border */
+}
+
+/* Styles for content with utilization between 20% and 30% */
+.accordion-content.orange {
+    background-color: #fff9c4; /* Soft yellow background */
+    border-color: #fbc02d; /* Darker yellow border */
+}
+
+.accordion-content.green {
+    background-color: #c8e6c9; /* Soft, minty green background */
+    border-color: #a5d6a7; /* Slightly darker mint green border */
+}
+
+/* Header Styles */
+.accordion-content header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 15px;
+    cursor: pointer;
+    transition: background 0.2s linear;
+}
+
+.accordion-content header:hover {
+    background-color: #ffffff;
+}
+
+.accordion-content header .title {
+    font-size: 17px;
+    font-weight: 500;
+    color: #333;
+    flex: 1; /* Ensures title takes up remaining space */
+}
+
+.accordion-content header .status {
+    font-size: 14px;
+    font-weight: 400;
+    margin-left: 10px;
+    white-space: nowrap; /* Prevent text from wrapping */
+}
+
+/* Status for below 20% utilization */
+.accordion-content.red .status {
+    color: #d32b2b; /* Cool red color */
+}
+
+/* Status for 20% to 30% utilization */
+.accordion-content.yellow .status {
+    color: #fbc02d; /* Dark yellow color */
+}
+
+/* Status for above 50% utilization */
+.accordion-content.green .status {
+    color: #2e7d32; /* Cool green color */
+}
+
+.accordion-content header .arrow {
+    font-size: 15px;
+    color: #333;
+    margin-left: 10px; /* Spacing between arrow and status */
+}
+
+/* Description Styles */
+.accordion-content .description {
+    height: 0;
+    font-size: 18px;
+    color: #333;
+    font-weight: 400;
+    padding: 0 15px;
+    overflow: hidden;
+    transition: height 0.2s ease, padding 0.2s ease;
+}
+
+/* Open State */
+.accordion-content.open .description {
+    height: auto;
+    padding: 15px; /* Adjust padding as needed */
+}
+
+/* Responsive Styles for Mobile */
+@media (max-width: 768px) {
+    .accordion-content header {
+        flex-direction: column; /* Stack title and status vertically */
+        align-items: flex-start; /* Align items to the start */
+        padding: 10px; /* Adjust padding */
+    }
+    
+    .accordion-content header .title {
+        font-size: 15px; /* Slightly smaller title font */
+    }
+    
+    .accordion-content header .status {
+        font-size: 13px; /* Slightly smaller status font */
+        margin-left: 0; /* Remove the left margin */
+        margin-top: 5px; /* Add margin to the top for spacing */
+    }
+    
+    .accordion-content .description {
+        font-size: 16px; /* Smaller description font for mobile */
+    }
+}
+
+@media (max-width: 480px) {
+    .accordion-content header {
+        padding: 8px; /* Further adjust padding for small screens */
+    }
+    
+    .accordion-content header .title {
+        font-size: 14px; /* Smaller title font for very small screens */
+    }
+    
+    .accordion-content header .status {
+        font-size: 12px; /* Smaller status font */
+    }
+    
+    .accordion-content .description {
+        font-size: 14px; /* Smaller description font */
+    }
+}
+
+
+
+
+
+
+
+  
+  
+  

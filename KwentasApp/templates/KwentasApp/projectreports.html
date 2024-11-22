@@ -1,0 +1,762 @@
+{% load humanize %} {% load static %}
+<!DOCTYPE html>
+<html lang="en"> {% csrf_token %} <head>
+    <meta charset="UTF-8">
+    <link rel="shortcut icon" type="x-icon" href="{% static 'KwentasApp/img/logobrowser.jpg' %}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Monitoring & Evaluation</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <script src="https://kit.fontawesome.com/a81368914c.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
+    <link rel="stylesheet" type="text/css" href="{% static 'KwentasApp/css/projreports.css' %}">
+  </head>
+  <body>
+    <div class="overlay" id="overlay"></div>
+    <main class="table{% if not request.user.is_superuser %} non-superuser{% endif %}" id="customers_table">
+      <section class="table__header">
+          <h1>Generate Project Reports</h1>
+          <div class="input-group">
+              <form method="GET" action="{% url 'search_continuing_projects' %}">
+                  <input type="text" name="query" placeholder="Search Continuing Projects...">
+                  <div class="export__file">
+                      <button type="submit" class="search">Search</button>
+                  </div>
+              </form>
+          </div>
+      </section>
+      <section class="table__body">
+        <form id="bulk-download-form" method="POST" action="{% url 'bulk_download_xlsx' %}">
+          {% csrf_token %}
+          <table class="table">
+              <thead>
+                  <tr>
+                      <th class="left-align">PPA</th>
+                      <th>Implementing Unit</th>
+                      <th>Code</th>
+                      <th>Services</th>
+                      {% if request.user.is_superuser %}
+                      <th>
+                        <label for="select-all" style="font-size: 1em; margin-right: 5px;">Download All </label>
+                        <input type="checkbox" id="select-all" style="transform: scale(1.5);" onclick="toggleSelectAll(this)">
+                    </th>
+                                          {% endif %}
+                  </tr>
+              </thead>
+              <tbody>
+                  {% if matched_entries_below_2024 %}
+                      {% for entry in matched_entries_below_2024 %}
+                          <tr>
+                              <td class="ppa" onclick="showDetails('{{ entry.code }}')">{{ entry.ppa }}</td>
+                              <td class="implementing-unit" onclick="showDetails('{{ entry.code }}')">{{ entry.implementing_unit }}</td>
+                              <td class="code" onclick="showDetails('{{ entry.code }}')">{{ entry.code }}</td>
+                              <td class="year" onclick="showDetails('{{ entry.code }}')">{{ entry.services }}</td>
+                              {% if request.user.is_superuser %}
+                                  <td style="text-align: center;">
+                                      <input type="checkbox" name="selected_entries" value="{{ entry.code }}" class="entry-checkbox" style="transform: scale(1.5);">
+                                  </td>
+                              {% endif %}
+                          </tr>
+                      {% endfor %}
+                  {% else %}
+                      {% if page_obj %}
+                          {% for entry in page_obj %}
+                              <tr>
+                                  <td class="ppa" onclick="showDetails('{{ entry.code }}')">{{ entry.ppa }}</td>
+                                  <td class="implementing-unit" onclick="showDetails('{{ entry.code }}')">{{ entry.implementing_unit }}</td>
+                                  <td class="code" onclick="showDetails('{{ entry.code }}')">{{ entry.code }}</td>
+                                  <td class="year" onclick="showDetails('{{ entry.code }}')">{{ entry.services }}</td>
+                                  {% if request.user.is_superuser %}
+                                      <td style="text-align: center;">
+                                          <input type="checkbox" name="selected_entries" value="{{ entry.code }}" class="entry-checkbox" style="transform: scale(1.5);">
+                                      </td>
+                                  {% endif %}
+                              </tr>
+                          {% endfor %}
+                      {% else %}
+                          <tr>
+                              <td colspan="6">No projects found.</td>
+                          </tr>
+                      {% endif %}
+                  {% endif %}
+              </tbody>
+          </table>
+          {% if request.user.is_superuser %}
+              <div class="export__file2">
+                  <button type="submit" class="download">Download Selected</button>
+              </div>
+          {% endif %}
+      </form>
+      </section>
+      {% if not request.user.is_superuser %}
+          <style>
+              .left-align {
+                  text-align: left !important;
+              }
+              .non-superuser .table th:nth-child(5),
+              .non-superuser .table td:nth-child(5) {
+                  display: none;
+              }
+          </style>
+      {% endif %}
+      <div class="back">
+          <a href="{% url 'homepage' %}">
+              <button class="back-btn">Back</button>
+          </a>
+      </div>
+      <div class="pagination">
+          <ul class="pagination-list">
+              {% if page_obj.has_previous %}
+                  <li class="pagination-item"><a href="?page=1">&laquo; First</a></li>
+                  <li class="pagination-item"><a href="?page={{ page_obj.previous_page_number }}">Previous</a></li>
+              {% else %}
+                  <li class="pagination-item disabled"><span>&laquo; First</span></li>
+                  <li class="pagination-item disabled"><span>Previous</span></li>
+              {% endif %}
+              <li class="pagination-item active"><span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span></li>
+              {% if page_obj.has_next %}
+                  <li class="pagination-item"><a href="?page={{ page_obj.next_page_number }}">Next</a></li>
+                  <li class="pagination-item"><a href="?page={{ page_obj.paginator.num_pages }}">Last &raquo;</a></li>
+              {% else %}
+                  <li class="pagination-item disabled"><span>Next</span></li>
+                  <li class="pagination-item disabled"><span>Last &raquo;</span></li>
+              {% endif %}
+          </ul>
+      </div>
+  </main>
+    <!-- DETAILS  -->
+    <div class="details" id="details">
+      <a href="{% url 'all_projects' %}">
+        <i class="material-icons x" id="exit">close</i>
+      </a>
+      <a href="{% url 'all_projects' %}">
+        <h1 class="form-title">PROJECT DETAILS</h1>
+      </a>
+      <ul> {% for entry in all_entries %} <li class="entry-item" id="details-{{ entry.code }}" style="display: none;">
+          <div class="details-container">
+            <div class="main-user-info" id="main-detail">
+              <div class="user-input-box">
+                <p class="label">PPA</p>
+                <p id="fullName" class="user-text">{{ entry.ppa }}</p>
+              </div>
+              <div class="user-input-box">
+                <p class="label">Implementing Unit</p>
+                <p id="username" class="user-text">{{ entry.implementing_unit }}</p>
+              </div>
+              <div class="user-input-box">
+                <p class="label">Location</p>
+                <p id="email" class="user-text">{{ entry.location }}</p>
+              </div>
+              <div class="user-input-box">
+                <p class="label">Appropriation</p>
+                <p id="phoneNumber" class="user-text">₱{{ entry.appropriation|intcomma }}</p>
+              </div>
+              <div class="user-input-box">
+                <p class="label">Remarks</p>
+                <p id="password" class="user-text">{{ entry.remarks }}</p>
+              </div>
+              <div class="user-input-box">
+                <p class="label">Start Date</p>
+                <p id="confirmPassword" class="user-text">{{ entry.start_date }}</p>
+              </div>
+              <div class="user-input-box">
+                <p class="label">End Date</p>
+                <p id="endDate" class="user-text">{{ entry.end_date }}</p>
+              </div>
+              <div class="user-input-box">
+                <p class="label">Code</p>
+                <p id="code" class="user-text">{{ entry.code }}</p>
+              </div>
+              <div class="user-input-box">
+                <p class="label">Services</p>
+                <p id="services" class="user-text">{{ entry.services }}</p>
+              </div>
+              <div class="user-input-box">
+                <p class="label">Year</p>
+                <p id="year" class="user-text">{{ entry.year }}</p>
+              </div>
+              <div class="user-input-box">
+                <p class="label">Total Budget</p>
+                <p id="totalBudget" class="user-text">₱{{ entry.overall_budget|intcomma }}</p>
+              </div>
+              <div class="user-input-box">
+                <p class="label">Total Spent</p>
+                <p id="totalAddedBudget" class="user-text">₱{{ entry.total_disbursements|intcomma }}</p>
+              </div>
+              <div class="user-input-box">
+                <p class="label">Total Added Budget</p>
+                <p id="totalSpent" class="user-text">₱{{ entry.added_budget|intcomma }}</p>
+              </div>
+              <div class="user-input-box">
+                <p class="label">Remaining Balance</p>
+                <p id="remainingBalance" class="user-text">₱{{ entry.remaining_total_balance|intcomma }}</p>
+              </div>
+              <div class="user-input-box">
+                <p class="label">Remaining Obligation</p>
+                <p id="remainingObligations" class="user-text">₱{{ entry.remaining_obligations|intcomma }}</p>
+              </div>
+              <div class="user-input-box">
+                <p class="label">Total Obligation</p>
+                <p id="totalObligations" class="user-text">₱{{ entry.total_obligations|intcomma }}</p>
+              </div>
+            </div>
+            
+            <div class="chart-container" data-entry-code="{{ entry.code }}" id="chart">
+              <div class="user-input-box">
+                <p class="label">Utilization Rate: </p>
+                <span class="utilizationRate">{{ entry.utilization_rate|floatformat:"-2" }} %</span>
+              </div>
+              <canvas class="pie-chart"></canvas>
+            </div>
+          </div>
+          <div class="tables-container">
+            <div class="table-box">
+              <span class="table-title">Added Budget</span>
+              <div class="table-wrapper">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Name</th>
+                      <th>Amount</th>
+                      <th>Date</th>
+                    </tr>
+                  </thead>
+                  <tbody> {% for budget in entry.budget_data %} <tr>
+                      <td>{{ budget.name|intcomma }}</td>
+                      <td>₱{{ budget.added_budget|intcomma }}</td>
+                      <td>{{ budget.date }}</td>
+                    </tr> {% endfor %} </tbody>
+                </table>
+              </div>
+            </div>
+            <div class="table-box">
+              <span class="table-title">Added Obligation</span>
+              <br>
+              <div class="table-wrapper">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Name</th>
+                      <th>Amount</th>
+                      <th>Date</th>
+                    </tr>
+                  </thead>
+                  <tbody> {% for obligation in entry.obligation %} <tr>
+                      <td>{{ obligation.name }}</td>
+                      <td>₱{{ obligation.obligation|intcomma }}</td>
+                      <td>{{ obligation.date}}</td>
+                    </tr> {% endfor %} </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="table-box">
+              <span class="table-title">Added Disbursement</span>
+              <br>
+              <div class="table-wrapper">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Name</th>
+                      <th>Amount</th>
+                      <th>Date</th>
+                    </tr>
+                  </thead>
+                  <tbody> {% for disbursement in entry.disbursement %} <tr>
+                      <td>{{ disbursement.name }}</td>
+                      <td>₱{{ disbursement.disbursement|intcomma }}</td>
+                      <td>{{ disbursement.date}}</td>
+                    </tr> {% endfor %} </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </li> {% endfor %} </ul>
+    </div>
+    <!-- UPDATE -->
+    <div class="details" id="update">
+      <a href="{% url 'continuing_projects' %}">   
+      </a>
+      <a href="{% url 'continuing_projects' %}">
+        <h1 class="form-title">Update Project</h1>
+      </a> {% for entry in all_entries %} <form id="updateForm_{{ entry.code }}" action="{% url 'update_entry' 'continuing'%}" method="post" onsubmit="handleSubmit(event)"> {% csrf_token %} <input type="hidden" name="entry_code" value="{{ entry.code }}">
+        <div class="main-user-info" id="main-update">
+          <div class="user-input-box">
+            <label for="ppa_{{ entry.code }}">PPA</label>
+            <input type="text" id="ppa_{{ entry.code }}" name="ppa" class="user-text" value="{{ entry.ppa }}">
+          </div>
+          <div class="user-input-box">
+            <label for="implementing_unit_{{ entry.code }}">Implementing Unit</label>
+            <div class="select-container">
+              <select id="implementing_unit_{{ entry.code }}" name="implementing_unit" class="user-input">
+                <option value="" disabled selected>{{ entry.implementing_unit }}</option>
+                <option value="Mayor's Office" {% if entry.implementing_unit == "Mayor's Office" %}selected{% endif %}>Mayor's Office</option>
+                <option value="Tourism Office" {% if entry.implementing_unit == "Tourism Office" %}selected{% endif %}>Tourism Office</option>
+                <option value="PESO Office" {% if entry.implementing_unit == "PESO Office" %}selected{% endif %}>PESO Office</option>
+                <option value="MDRRMO" {% if entry.implementing_unit == "MDRRMO" %}selected{% endif %}>MDRRMO</option>
+                <option value="Sanguniang Barangay Office" {% if entry.implementing_unit == "Sanguniang Barangay Office" %}selected{% endif %}>Sanguniang Barangay Office</option>
+                <option value="MPDC" {% if entry.implementing_unit == "MPDC" %}selected{% endif %}>MPDC</option>
+                <option value="MCR Office" {% if entry.implementing_unit == "MCR Office" %}selected{% endif %}>MCR Office</option>
+                <option value="MBO Office" {% if entry.implementing_unit == "MBO Office" %}selected{% endif %}>MBO Office</option>
+                <option value="Accountant Office" {% if entry.implementing_unit == "Accountant Office" %}selected{% endif %}>Accountant Office</option>
+                <option value="Assessor's Office" {% if entry.implementing_unit == "Assessor's Office" %}selected{% endif %}>Assessor's Office</option>
+                <option value="MHO Office" {% if entry.implementing_unit == "MHO Office" %}selected{% endif %}>MHO Office</option>
+                <option value="Parks & Plaza" {% if entry.implementing_unit == "Parks & Plaza" %}selected{% endif %}>Parks & Plaza</option>
+                <option value="MSWD Office" {% if entry.implementing_unit == "MSWD Office" %}selected{% endif %}>MSWD Office</option>
+                <option value="MENRO Office" {% if entry.implementing_unit == "MENRO Office" %}selected{% endif %}>MENRO Office</option>
+                <option value="MO" {% if entry.implementing_unit == "MO" %}selected{% endif %}>MO</option>
+                <option value="Streets & Bridges" {% if entry.implementing_unit == "Streets & Bridges" %}selected{% endif %}>Streets & Bridges</option>
+                <option value="LDF" {% if entry.implementing_unit == "LDF" %}selected{% endif %}>LDF</option>
+                <option value="Waterworks" {% if entry.implementing_unit == "Waterworks" %}selected{% endif %}>Waterworks</option>
+                <option value="Markets" {% if entry.implementing_unit == "Markets" %}selected{% endif %}>Markets</option>
+                <option value="Zero Waste" {% if entry.implementing_unit == "Zero Waste" %}selected{% endif %}>Zero Waste</option>
+              </select>
+            </div>
+          </div>
+          <div class="user-input-box">
+            <label for="location_{{ entry.code }}">Location</label>
+            <input type="text" id="location_{{ entry.code }}" name="location" class="user-input" value="{{ entry.location }}">
+          </div>
+          <div class="user-input-box">
+            <label for="remarks_{{ entry.code }}">Remarks</label>
+            <input type="text" id="remarks_{{ entry.code }}" name="remarks" class="user-input" value="{{ entry.remarks }}">
+          </div>
+          <div class="user-input-box">
+            <label for="start_date_{{ entry.code }}">Start Date</label>
+            <input type="date" id="start_date_{{ entry.code }}" name="start_date" class="user-input" value="{{ entry.start_date }}">
+          </div>
+          <div class="user-input-box">
+            <label for="end_date_{{ entry.code }}">End Date</label>
+            <input type="date" id="end_date_{{ entry.code }}" name="end_date" class="user-input" value="{{ entry.end_date }}">
+          </div>
+          <div class="user-input-box">
+            <label for="code_{{ entry.code }}">Code</label>
+            <input type="text" id="code_{{ entry.code }}" name="code" class="user-input" value="{{ entry.code }}">
+          </div>
+          <div class="user-input-box">
+            <label for="services_{{ entry.code }}">Services</label>
+            <select id="services_{{ entry.code }}" name="services" class="user-input">
+              <option value="" disabled selected>{{ entry.services }}</option>
+              <option value="General" {% if entry.services == "General" %}selected{% endif %}>General</option>
+              <option value="Social" {% if entry.services == "Social" %}selected{% endif %}>Social</option>
+              <option value="Economic" {% if entry.services == "Economic" %}selected{% endif %}>Economic</option>
+              <option value="Environmental" {% if entry.services == "Environmental" %}selected{% endif %}>Environmental</option>
+            </select>
+          </div>
+          <div class="user-input-box">
+            <label for="year_{{ entry.code }}">Year</label>
+            <input type="number" id="year_{{ entry.code }}" name="year" class="user-input" value="{{ entry.year }}">
+          </div>
+        </div>
+        <div class="form-submit-btn">
+          <input type="submit" value="Update">
+        </div>
+        <a href="{% url 'continuing_projects' %}">
+          <div class="form-submit-btn">
+           <div class="exit" style="background-color: red;">Exit</div>
+          </div>
+        </a>
+      </form> {% endfor %}
+    </div>
+    <!-- BUDGET -->
+    <div class="details" id="budget">
+      <div class="login-content">
+        {% if project_type %}
+        <form id="add-budget-form" action="{% url 'add_budget' project_type %}" method="post"> {% csrf_token %} <h2 class="title" style="margin-bottom: 45px;">Add Project Budget</h2>
+          {% else %}
+          <p>Project type is missing!</p>
+          {% endif %}          
+          <input type="hidden" name="entry_code" id="budget-code">
+          <div class="input-div-new">
+            <div class="div">
+             <p class="inputs-label" style="white-space: nowrap;">Budget Name</p>
+              <!-- Use label instead of h5 -->
+              <input type="text" name="budget_name" class="input">
+            </div>
+          </div>
+          <div class="input-div-new">
+            <div class="div">
+              <p class="inputs-label" >Date</p>
+              <!-- Use label instead of h5 -->
+              <input type="date" name="budget_date" class="input">
+            </div>
+          </div>
+          <div class="input-div-new">
+            <div class="div">
+              <p class="inputs-label"  style="white-space: nowrap;">Added Budget</p>
+              <!-- Use label instead of h5 -->
+              <input type="text" name="added_budget" class="input">
+            </div>
+          </div>
+          <button type="submit" class="btn-add" value="Submit">Submit</button>
+          <a href="{% url 'continuing_projects' %}" class="btn-cancel" style="color: white;">Exit</a>
+        </form>
+      </div>
+    </div>
+    <!-- OBLIGATION -->
+    <div class="details" id="obligation">
+      <div class="login-content">
+        <form id="add-obligation-form" action="{% url 'add_obligation' 'continuing' %}" method="post"> {% csrf_token %} <h2 class="title">Add Project Obligation</h2>
+          <br>
+          <br>
+          <input type="hidden" name="entry-code" id="obligation-code">
+          <div class="input-div-new">
+            <div class="div">
+              <p class="inputs-label"  style="white-space: nowrap;">Obligation Name</p>
+              <!-- Use label instead of h5 -->
+              <input type="text" name="obligation_name" class="input">
+            </div>
+          </div>
+          <div class="input-div-new">
+            <div class="div">
+              <p class="inputs-label" >Date</p>
+              <!-- Use label instead of h5 -->
+              <input type="date" name="obligation_date" class="input">
+            </div>
+          </div>
+          <div class="input-div-new">
+            <div class="div">
+              <p class="inputs-label"  style="white-space: nowrap;">Obligation Spent</p>
+              <!-- Use label instead of h5 -->
+              <input type="text" name="obligation_input" class="input">
+            </div>
+          </div>
+          <button type="submit" class="btn-add" value="Submit">Submit</button>
+          <a href="{% url 'continuing_projects' %}" class="btn-cancel" style="text-decoration: none; color: white;">Exit</a>
+        </form>
+      </div>
+    </div>
+    <!-- Delete -->
+    <div class="details" id="delete">
+      <div class="login-content">
+        <form id="deleteForm" action="{% url 'continuing_delete_entry' %}" method="post">
+          {% csrf_token %}
+          <h2 class="title">Delete Project</h2>
+          <br>
+          <br>
+          <div class="input-div-new">
+            <div class="div">
+              <label for="delete-code" style="white-space: nowrap;">Entry Code</label>
+              <input type="text" name="entry_code" id="delete-code" readonly placeholder="1-121" class="input">
+            </div>
+          </div>
+          <!-- No need for a submit button here -->
+          <button type="button" onclick="confirmDelete()" class="btn-add">Delete</button>
+          <a href="{% url 'continuing_projects' %}" class="btn-cancel" style="text-decoration: none; color: white;">Exit</a>
+        </form>
+        
+      </div>
+    </div>
+    <!------------------------------------------------------ JAVASCRIPT-------------------------------------------------->
+    <!-- PIE CHART JS -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        var chartContainers = document.querySelectorAll('.chart-container');
+        chartContainers.forEach(function(container) {
+          var utilizationRateElement = container.querySelector('.utilizationRate');
+          var utilizationRate = parseFloat(utilizationRateElement.textContent);
+          var remainingPercentage = 100 - utilizationRate;
+          var canvas = container.querySelector('.pie-chart');
+          var ctx = canvas.getContext('2d');
+          new Chart(ctx, {
+            type: 'pie',
+            data: {
+              labels: ['Utilized', 'Remaining'],
+              datasets: [{
+                data: [utilizationRate, remainingPercentage],
+                backgroundColor: ['rgba(0, 123, 255, 0.6)', // Utilized (blue)
+                  'rgba(135, 206, 235, 0.6)' // Remaining (sky blue)
+                ],
+                borderColor: ['rgba(0, 123, 255, 1)', 'rgba(135, 206, 235, 1)'],
+                borderWidth: 1
+              }]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              legend: {
+                position: 'top',
+              },
+              title: {
+                display: true,
+                text: 'Utilization Rate'
+              },
+              animation: {
+                animateScale: true,
+                animateRotate: true
+              }
+            }
+          });
+        });
+      });
+    </script>
+    <!-- Details js -->
+     <!-- Add this in your HTML template where you include scripts -->
+    <script>
+      function showDetails(code) {
+        document.getElementById('customers_table').style.filter = 'blur(10px)';
+        document.getElementById('overlay').style.display = 'block';
+        var details = document.getElementsByClassName('entry-item');
+        for (var i = 0; i < details.length; i++) {
+          details[i].style.display = 'none';
+        }
+        document.getElementById('details-' + code).style.display = 'block';
+        document.getElementById('details').style.display = 'block';
+      }
+    </script>
+    <!-- Update js -->
+    <script>
+      function showUpdateForm(code) {
+        var allUpdateForms = document.querySelectorAll('[id^="updateForm_"]');
+        allUpdateForms.forEach(function(form) {
+          form.style.display = 'none';
+        });
+        var updateForm = document.getElementById('updateForm_' + code);
+        if (updateForm) {
+          updateForm.style.display = 'block';
+        }
+        document.getElementById('update').style.display = 'block';
+        document.getElementById('customers_table').style.filter = 'blur(10px)';
+        document.getElementById('overlay').style.display = 'block';
+      }
+    </script>
+    <script>
+      // Function to handle form submission
+      function handleSubmit(event) {
+        event.preventDefault(); // Prevent default form submission
+        // Validate form fields
+        if (!validateForm(event.target)) {
+          // If form validation fails, do not proceed
+          console.log("Form validation failed!");
+          return;
+        }
+        // Show confirmation dialog using SweetAlert2
+        Swal.fire({
+          title: "Are you sure?",
+          text: "Once updated, you won't be able to revert this!",
+          icon: "warning",
+          showCancelButton: true,
+          confirmButtonColor: "#3085d6",
+          cancelButtonColor: "#d33",
+          confirmButtonText: "Yes, update it!",
+          cancelButtonText: "No, cancel!",
+        }).then((result) => {
+          if (result.isConfirmed) {
+            // If user confirms, submit the form
+            var form = event.target;
+            form.submit();
+          } else {
+            // If user cancels, do nothing
+            // Optional: Redirect or perform other actions
+            console.log("Update canceled!");
+          }
+        });
+      }
+      // Function to validate form fields
+      function validateForm(form) {
+        // Example: Check if required fields are empty
+        var requiredFields = form.querySelectorAll("[required]");
+        for (var i = 0; i < requiredFields.length; i++) {
+          if (requiredFields[i].value.trim() === "") {
+            // If a required field is empty, return false
+            return false;
+          }
+        }
+        return true; // Return true if all validations pass
+      }
+    </script>
+    <!-- Budget js -->
+    <script>
+      function showAddBudget(budget_code) {
+        document.getElementById('budget-code').value = budget_code;
+        document.getElementById('customers_table').style.filter = 'blur(10px)';
+        document.getElementById('budget').style.display = 'block';
+        document.getElementById('overlay').style.display = 'block';
+      }
+    </script>
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        // Get the form element
+        var form = document.getElementById('add-budget-form');
+        // Add submit event listener to the form
+        form.addEventListener('submit', function(event) {
+          event.preventDefault(); // Prevent the default form submission
+          // Show SweetAlert confirmation dialog
+          Swal.fire({
+            title: 'Are you sure?',
+            text: 'Do you want to submit this budget? This will alter data',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Yes, submit',
+            cancelButtonText: 'No, cancel',
+            confirmButtonColor: '#28a745', // Green color for the confirm button
+            cancelButtonColor: '#dc3545' // Red color for the cancel button
+          }).then((result) => {
+            // If the user confirms, submit the form
+            if (result.isConfirmed) {
+              form.submit();
+            }
+          });
+        });
+      });
+    </script>
+    <!-- Obligation js -->
+    <script>
+      function showAddObligationForm(entryCode) {
+        document.getElementById('obligation-code').value = entryCode;
+        document.getElementById('obligation').style.display = 'block';
+        document.getElementById('customers_table').style.filter = 'blur(10px)';
+        document.getElementById('overlay').style.display = 'block';
+      }
+    </script>
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        // Get the form element
+        var form = document.getElementById('add-obligation-form');
+        // Add submit event listener to the form
+        form.addEventListener('submit', function(event) {
+          event.preventDefault(); // Prevent the default form submission
+          // Show SweetAlert confirmation dialog
+          Swal.fire({
+            title: 'Are you sure?',
+            text: 'Do you want to add this obligation? This will alter data',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Yes, submit',
+            cancelButtonText: 'No, cancel',
+            confirmButtonColor: '#28a745', // Green color for the confirm button
+            cancelButtonColor: '#dc3545' // Red color for the cancel button
+          }).then((result) => {
+            // If the user confirms, submit the form
+            if (result.isConfirmed) {
+              form.submit();
+            }
+          });
+        });
+      });
+    </script>
+    <!-- Delete js -->
+    <script>
+      function showDeleteForm(code) {
+        document.getElementById('delete-code').value = code;
+        document.getElementById('delete').style.display = 'block';
+        document.getElementById('customers_table').style.filter = 'blur(10px)';
+        document.getElementById('overlay').style.display = 'block';
+      }
+    </script>
+   <script>
+    function confirmDelete() {
+      // Show SweetAlert confirmation dialog
+      Swal.fire({
+        title: 'Are you sure?',
+        text: "You won't be able to revert this!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Yes, delete it!'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          // If user confirms deletion, submit the form
+          var form = document.getElementById('deleteForm');
+          form.submit();
+        }
+      });
+    }
+  </script>     
+    <script>
+      function hideOverlay() {
+        document.getElementById('overlay').style.display = 'none';
+        document.getElementById('customers_table').style.filter = 'none';
+        var details = document.getElementById('details');
+        if (details) details.style.display = 'none';
+        var update = document.getElementById('update');
+        if (update) update.style.display = 'none';
+        var budget = document.getElementById('budget');
+        if (budget) budget.style.display = 'none';
+        var obligation = document.getElementById('obligation');
+        if (obligation) obligation.style.display = 'none';
+        var deleteForm = document.getElementById('delete');
+        if (deleteForm) deleteForm.style.display = 'none';
+      }
+      document.getElementById('overlay').addEventListener('click', hideOverlay);
+    </script>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+      const form = document.getElementById('your-form-id'); // Replace with your form ID
+  
+      form.addEventListener('submit', function(event) {
+          event.preventDefault(); // Prevent the default form submission
+  
+          // Get the selected entries (this might vary based on your form setup)
+          const selectedEntries = Array.from(document.querySelectorAll('input[name="selected_entries"]:checked')).map(el => el.value);
+  
+          if (selectedEntries.length > 5) {
+              Swal.fire({
+                  icon: 'error',
+                  title: 'Oops...',
+                  text: 'You can select a maximum of 5 entries',
+                  confirmButtonText: 'OK'
+              });
+              return; // Exit the function to prevent form submission
+          }
+  
+          // If valid, submit the form
+          form.submit();
+      });
+  });
+  </script>
+
+  <!-- Add this in your HTML template -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script>
+$(document).ready(function() {
+    $('#your-form-id').on('submit', function(event) {
+        event.preventDefault(); // Prevent the default form submission
+
+        var form = $(this);
+        var formData = new FormData(form[0]);
+
+        $.ajax({
+            url: form.attr('action'),
+            type: form.attr('method'),
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(data) {
+                // Handle success response
+                window.location.href = data.file_url; // Or handle the file download
+            },
+            error: function(xhr) {
+                var response = JSON.parse(xhr.responseText);
+                if (response.error) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops...',
+                        text: response.error,
+                        confirmButtonText: 'OK'
+                    });
+                }
+            }
+        });
+    });
+});
+</script>
+
+<script>
+  // JavaScript function to toggle 'Select All' functionality
+  function toggleSelectAll(selectAllCheckbox) {
+      const checkboxes = document.querySelectorAll('.entry-checkbox');
+      checkboxes.forEach(checkbox => {
+          checkbox.checked = selectAllCheckbox.checked;
+      });
+  }
+</script>
+  </body>
+</html>

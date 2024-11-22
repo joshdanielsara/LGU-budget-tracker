@@ -1,0 +1,555 @@
+{% load humanize %} {% load static %}
+<!DOCTYPE html>
+<html lang="en"> {% csrf_token %} <head>
+    <meta charset="UTF-8">
+    <link rel="shortcut icon" type="x-icon" href="{% static 'KwentasApp/img/logobrowser.jpg' %}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Disbursements</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
+    <link rel="stylesheet" type="text/css" href="{% static 'KwentasApp/css/continuing.css' %}">
+  </head>
+  <body>
+    <div class="overlay" id="overlay"></div>
+    <main class="table{% if not request.user.is_superuser %} non-superuser{% endif %}" id="customers_table">
+      <section class="table__header">
+        <h1>Disbursements</h1>
+        <div class="sorting-options">
+          <form method="GET" action="">
+              <select name="sort" id="sort" onchange="this.form.submit()">
+                  <option value="" {% if not sort_option %}selected{% endif %}>Sort by</option>
+                  <option value="recent" {% if sort_option == 'recent' %}selected{% endif %}>Recently Added</option>
+                  <option value="oldest" {% if sort_option == 'oldest' %}selected{% endif %}>Oldest Added</option>
+              </select>
+              <noscript><button type="submit">Sort</button></noscript> <!-- For non-JS environments -->
+          </form>
+      </div>     
+      <div class="input-group">
+        <form method="GET" action="{% url 'search_projects' 'disbursements'%}">
+            <input type="text" id="search-input" name="query" placeholder="Search Current Projects...">
+        </form>
+        <div id="search-results"></div>
+    </div>
+        <div class="export__file">
+          <button type="submit" class="export__file-btn">Search</button>
+          </form>
+        </div>
+      </section>
+      <section class="table__body">
+        <table class="table">
+          <thead>
+            <tr>
+              <th class="left-align">PPA</th>
+              <th>Remaining Obligations</th>
+              <th>Total Obligation</th>
+              {% if request.user.is_superuser or request.user.department == 'Accountant Office' %}
+                <th>Add</th>
+              {% endif %}
+            </tr>
+          </thead>
+          <tbody> 
+            {% if matched_entries %}
+            {% for entry in matched_entries %}
+                <tr style="cursor: pointer;">
+                  <td class="ppa" onclick="showDetails('{{ entry.code }}')">{{ entry.ppa }}</td>
+                  <td class="code" onclick="showDetails('{{ entry.code }}')">₱{{ entry.remaining_obligations|intcomma }}</td>
+                  <td class="year" onclick="showDetails('{{ entry.code }}')">₱{{ entry.total_obligations|intcomma }}</td>
+                  {% if request.user.is_superuser or request.user.department == 'Accountant Office' %}
+                    <td>
+                      {% if entry.is_awarded %}
+                        <p class="status obligation" onclick="showAddDisbursementForm('{{ entry.code }}')">Disburse</p>
+                      {% else %}
+                        Project needs to be Awarded
+                      {% endif %}
+                    </td>
+                  {% endif %}
+                </tr>
+              {% endfor %}
+        {% else %}
+            {% if page_obj %}
+              {% for entry in page_obj %}
+                <tr style="cursor: pointer;">
+                  <td class="ppa" onclick="showDetails('{{ entry.code }}')">{{ entry.ppa }}</td>
+                  <td class="code" onclick="showDetails('{{ entry.code }}')">₱{{ entry.remaining_obligations|intcomma }}</td>
+                  <td class="year" onclick="showDetails('{{ entry.code }}')">₱{{ entry.total_obligations|intcomma }}</td>
+                  {% if request.user.is_superuser or request.user.department == 'Accountant Office' %}
+                    <td>
+                      {% if entry.is_awarded %}
+                        <p class="status obligation" onclick="showAddDisbursementForm('{{ entry.code }}')">Disburse</p>
+                      {% else %}
+                        Project needs to be Awarded
+                      {% endif %}
+                    </td>
+                  {% endif %}
+                </tr>
+              {% endfor %}
+            {% else %}
+              <tr>
+                <td colspan="4">No projects found.</td>
+              </tr>
+            {% endif %}
+            {% endif %}
+          </tbody>
+        </table>
+      </section>
+    
+      {% if not request.user.is_superuser %}
+        <style>
+          .left-align {
+            text-align: left !important;
+          }
+          .non-superuser .table th:nth-child(4), 
+          .non-superuser .table td:nth-child(4) {
+            display: none;
+          }
+        </style>
+      {% endif %}
+    
+      <div class="pagination">
+        <ul class="pagination-list">
+          {% if page_obj.has_previous %}
+            <li class="pagination-item"><a href="{% url 'disbursements' %}?{% if query %}query={{ query }}&{% endif %}page=1">&laquo; First</a></li>
+            <li class="pagination-item"><a href="{% url 'disbursements' %}?{% if query %}query={{ query }}&{% endif %}page={{ page_obj.previous_page_number }}">Previous</a></li>
+          {% else %}
+            <li class="pagination-item disabled"><span>&laquo; First</span></li>
+            <li class="pagination-item disabled"><span>Previous</span></li>
+          {% endif %}
+      
+          <li class="pagination-item active"><span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span></li>
+      
+          {% if page_obj.has_next %}
+            <li class="pagination-item"><a href="{% url 'disbursements' %}?{% if query %}query={{ query }}&{% endif %}page={{ page_obj.next_page_number }}">Next</a></li>
+            <li class="pagination-item"><a href="{% url 'disbursements' %}?{% if query %}query={{ query }}&{% endif %}page={{ page_obj.paginator.num_pages }}">Last &raquo;</a></li>
+          {% else %}
+            <li class="pagination-item disabled"><span>Next</span></li>
+            <li class="pagination-item disabled"><span>Last &raquo;</span></li>
+          {% endif %}
+        </ul>
+      </div>
+      
+    
+      <div class="back">
+        <a href="{% url 'homepage' %}">
+          <button class="back-btn">Back</button>
+        </a>
+      </div>
+    </main>
+    
+    <!-- DETAILS  -->
+    <div class="details" id="details">
+      <a href="{% url 'disbursements' %}">
+        <i class="material-icons x" id="exit">close</i>
+      </a>
+      <a href="{% url 'disbursements' %}">
+        <h1 class="form-title">PROJECT DETAILS</h1>
+      </a>
+      <ul> {% for entry in all_entries %} <li class="entry-item" id="details-{{ entry.code }}" style="display: none;">
+          <div class="details-container">
+            <div class="main-user-info" id="main-detail">
+              <div class="user-input-box">
+                <p class="label">PPA</p>
+                <p id="fullName" class="user-text">{{ entry.ppa }}</p>
+              </div>
+              <div class="user-input-box">
+                <p class="label">Implementing Unit</p>
+                <p id="username" class="user-text">{{ entry.implementing_unit }}</p>
+              </div>
+              <div class="user-input-box">
+                <p class="label">Location</p>
+                <p id="email" class="user-text">{{ entry.location }}</p>
+              </div>
+              <div class="user-input-box">
+                <p class="label">Appropriation</p>
+                <p id="phoneNumber" class="user-text">₱{{ entry.appropriation|intcomma }}</p>
+              </div>
+              <div class="user-input-box">
+                <p class="label">Remarks</p>
+                <p id="password" class="user-text">{{ entry.remarks }}</p>
+              </div>
+              <div class="user-input-box">
+                <p class="label">Start Date</p>
+                <p id="confirmPassword" class="user-text">{{ entry.start_date }}</p>
+              </div>
+              <div class="user-input-box">
+                <p class="label">End Date</p>
+                <p id="endDate" class="user-text">{{ entry.end_date }}</p>
+              </div>
+              <div class="user-input-box">
+                <p class="label">Code</p>
+                <p id="code" class="user-text">{{ entry.code }}</p>
+              </div>
+              <div class="user-input-box">
+                <p class="label">Services</p>
+                <p id="services" class="user-text">{{ entry.services }}</p>
+              </div>
+              <div class="user-input-box">
+                <p class="label">Year</p>
+                <p id="year" class="user-text">{{ entry.year }}</p>
+              </div>
+              <div class="user-input-box">
+                <p class="label">Total Budget</p>
+                <p id="totalBudget" class="user-text">₱{{ entry.overall_budget|intcomma }}</p>
+              </div>
+             
+              <div class="user-input-box">
+                <p class="label">Total Added Budget</p>
+                <p id="totalSpent" class="user-text">₱{{ entry.added_budget|intcomma }}</p>
+              </div>
+              <div class="user-input-box">
+                <p class="label">Remaining Balance</p>
+                <p id="remainingBalance" class="user-text">₱{{ entry.remaining_total_balance|intcomma }}</p>
+              </div>
+              <div class="user-input-box">
+                <p class="label">Remaining Obligation</p>
+                <p id="remainingObligations" class="user-text">₱{{ entry.remaining_obligations|intcomma }}</p>
+              </div>
+              <div class="user-input-box">
+                <p class="label">Total Obligation</p>
+                <p id="totalObligations" class="user-text">₱{{ entry.total_obligations|intcomma }}</p>
+              </div>
+              <div class="user-input-box">
+                <p class="label">Total Spent</p>
+                <p id="totalAddedBudget" class="user-text">₱{{ entry.total_disbursements|intcomma }}</p>
+              </div>
+            </div>
+            <div class="chart-container" data-entry-code="{{ entry.code }}" id="chart">
+              <div class="user-input-box">
+                <p class="label">Utilization Rate: </label></p>
+                <span class="utilizationRate">{{ entry.utilization_rate|floatformat:"-2" }} %</span>
+              </div>
+              <canvas class="pie-chart"></canvas>
+            </div>
+          </div>
+          <div class="tables-container">
+            <div class="table-box">
+              <span class="table-title">Added Budget</span>
+              <div class="table-wrapper">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Name</th>
+                      <th>Amount</th>
+                      <th>Date</th>
+                    </tr>
+                  </thead>
+                  <tbody> {% for budget in entry.budget_data %} <tr>
+                      <td>{{ budget.name|intcomma }}</td>
+                      <td>₱{{ budget.added_budget|intcomma }}</td>
+                      <td>{{ budget.date }}</td>
+                    </tr> {% endfor %} </tbody>
+                </table>
+              </div>
+            </div>
+            <div class="table-box">
+              <span class="table-title">Added Obligation</span>
+              <br>
+              <div class="table-wrapper">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Name</th>
+                      <th>Amount</th>
+                      <th>Date</th>
+                    </tr>
+                  </thead>
+                  <tbody> {% for obligation in entry.obligation %} <tr>
+                      <td>{{ obligation.name }}</td>
+                      <td>₱{{ obligation.obligation|intcomma }}</td>
+                      <td>{{ obligation.date}}</td>
+                    </tr> {% endfor %} </tbody>
+                </table>
+              </div>
+            </div>
+
+
+            <div class="table-box">
+              <span class="table-title">Added Disbursements</span>
+              <br>
+              <div class="table-wrapper">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Disbursement Voucher</th>
+                      <th>Purpose</th>
+                     
+                      <th>Amount</th>
+                      <th>Date</th>
+                    </tr>
+                  </thead>
+                  <tbody> {% for disbursement in entry.disbursement %} <tr>
+                    <td>{{ disbursement.voucher }}</td>
+                      <td>{{ disbursement.name }}</td>
+                      <td>₱{{ disbursement.disbursement|intcomma }}</td>
+                      <td>{{ disbursement.date}}</td>
+                    </tr> {% endfor %} </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </li> {% endfor %} </ul>
+    </div>
+    <!-- Disbursement-->
+    <div class="details" id="disbursement">
+      <div class="login-content">
+        <form id="add-disbursement-form" action="{% url 'add_disbursement' 'disbursement' %}" method="post" onsubmit="showLoader();">
+          {% csrf_token %}
+          <h2 class="title">Add Disbursement</h2>
+          <input type="hidden" name="entry-code" id="disbursement-code">
+
+          <div class="input-div-new">
+            <div class="div">
+              <p class="inputs-label" style="white-space: nowrap;">Voucher Number</p>
+              <input type="text" name="voucher" class="input" required>
+            </div>
+          </div>
+          <div class="input-div-new">
+            <div class="div">
+              <p class="inputs-label" style="white-space: nowrap;">Purpose</p>
+              <input type="text" name="disbursement_name" class="input" required>
+            </div>
+          </div>
+          <div class="input-div-new">
+            <div class="div">
+              <p class="inputs-label">Date</p>
+              <input type="date" name="disbursement_date" class="input" required>
+            </div>
+          </div>
+          <div class="input-div-new">
+            <div class="div">
+              <p class="inputs-label" style="white-space: nowrap;">Disbursement Amount</p>
+              <input type="text" name="disbursement_input" class="input" id="disbursement-input" required>
+            </div>
+          </div>
+          <button type="submit" class="btn-add" value="Submit">Submit</button>
+          <a href="{% url 'disbursements' %}" class="btn-cancel" style="text-decoration: none; color: white;">Exit</a>
+        </form>
+      </div>
+    </div>
+    <!------------------------------------------------------ JAVASCRIPT-------------------------------------------------->
+    <!-- PIE CHART JS -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  
+    
+    
+  
+  
+    <script>  
+      //INPUT MASKING 
+      document.getElementById('disbursement-input').addEventListener('input', function (e) {
+          // Remove any non-numeric characters except commas
+          let value = e.target.value.replace(/[^0-9]/g, '');
+          
+          // Format the number with commas
+          value = value.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+
+          // Set the formatted value back to the input field
+          e.target.value = value;
+      });
+  </script>    
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        var chartContainers = document.querySelectorAll('.chart-container');
+        chartContainers.forEach(function(container) {
+          var utilizationRateElement = container.querySelector('.utilizationRate');
+          var utilizationRate = parseFloat(utilizationRateElement.textContent);
+          var remainingPercentage = 100 - utilizationRate;
+          var canvas = container.querySelector('.pie-chart');
+          var ctx = canvas.getContext('2d');
+          new Chart(ctx, {
+            type: 'pie',
+            data: {
+              labels: ['Utilized', 'Remaining'],
+              datasets: [{
+                data: [utilizationRate, remainingPercentage],
+                backgroundColor: ['rgba(0, 123, 255, 0.6)', // Utilized (blue)
+                  'rgba(135, 206, 235, 0.6)' // Remaining (sky blue)
+                ],
+                borderColor: ['rgba(0, 123, 255, 1)', 'rgba(135, 206, 235, 1)'],
+                borderWidth: 1
+              }]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              legend: {
+                position: 'top',
+              },
+              title: {
+                display: true,
+                text: 'Utilization Rate'
+              },
+              animation: {
+                animateScale: true,
+                animateRotate: true
+              }
+            }
+          });
+        });
+      });
+    </script>
+    <!-- Details js -->
+    <script>
+      function showDetails(code) {
+        document.getElementById('customers_table').style.filter = 'blur(10px)';
+        document.getElementById('overlay').style.display = 'block';
+        var details = document.getElementsByClassName('entry-item');
+        for (var i = 0; i < details.length; i++) {
+          details[i].style.display = 'none';
+        }
+        document.getElementById('details-' + code).style.display = 'block';
+        document.getElementById('details').style.display = 'block';
+      }
+    </script>
+    <!-- Disbursement js -->
+    <script>
+      function showAddDisbursementForm(entryCode) {
+        document.getElementById('disbursement-code').value = entryCode;
+        document.getElementById('disbursement').style.display = 'block';
+        document.getElementById('customers_table').style.filter = 'blur(10px)';
+        document.getElementById('overlay').style.display = 'block';
+      }
+    </script>
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        // Get the form element
+        var form = document.getElementById('add-obligation-form');
+        // Add submit event listener to the form
+        form.addEventListener('submit', function(event) {
+          event.preventDefault(); // Prevent the default form submission
+          // Show SweetAlert confirmation dialog
+          Swal.fire({
+            title: 'Are you sure?',
+            text: 'Do you want to add this disbursement? This will alter data',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Yes, submit',
+            cancelButtonText: 'No, cancel',
+            confirmButtonColor: '#28a745', // Green color for the confirm button
+            cancelButtonColor: '#dc3545' // Red color for the cancel button
+          }).then((result) => {
+            // If the user confirms, submit the form
+            if (result.isConfirmed) {
+              form.submit();
+            }
+          });
+        });
+      });
+    </script>   
+    <script>
+      function hideOverlay() {
+        document.getElementById('overlay').style.display = 'none';
+        document.getElementById('customers_table').style.filter = 'none';
+        var details = document.getElementById('details');
+        if (details) details.style.display = 'none';
+        
+       
+        var disbursement = document.getElementById('disbursement');
+        if (disbursement) disbursement.style.display = 'none';
+      }
+      document.getElementById('overlay').addEventListener('click', hideOverlay);
+    </script>
+
+{% if messages %}
+    {% for message in messages %}
+        <script type="text/javascript">
+            document.addEventListener('DOMContentLoaded', function() {
+                // Create an array to hold messages
+                var messages = [];
+
+                // Push the current message into the array
+                messages.push({
+                    'tag': '{{ message.tags|escapejs }}',
+                    'text': '{{ message|escapejs }}'
+                });
+
+                // Iterate through the messages array and display SweetAlert
+                messages.forEach(function(message) {
+                    if (message.tag === 'error') {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Oops...',
+                            text: message.text,
+                            confirmButtonColor: '#3085d6'
+                        });
+                    } else if (message.tag === 'success') {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Success!',
+                            text: message.text,
+                            confirmButtonColor: '#3085d6'
+                        });
+                    }
+                });
+            });
+        </script>
+    {% endfor %}
+{% endif %}
+
+<script type="text/javascript">
+  function showLoader() {
+    // Show SweetAlert loader when form is submitted
+    Swal.fire({
+      title: 'Processing...',
+      text: 'Please wait while we process your request.',
+      allowOutsideClick: false,  // Prevents closing by clicking outside
+      showConfirmButton: false,  // Hides the "OK" button
+      willOpen: () => {
+        Swal.showLoading(); // Show the loading spinner
+      },
+      didOpen: () => {
+        // You can add additional logic here to close the SweetAlert once the request is done
+        // e.g., listen for an AJAX response or use a timeout
+      }
+    });
+  }
+</script>
+
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+  $(document).ready(function() {
+      $('#search-input').on('input', function() {
+          let query = $(this).val();
+          $.ajax({
+              url: "{% url 'search_projects' 'disbursements' %}",  // Adjust URL if needed
+              data: { query: query },
+              headers: { 'X-Requested-With': 'XMLHttpRequest' }, // Mark it as AJAX
+              success: function(response) {
+                  const tbody = $('table.table tbody');  // Target the table's <tbody>
+                  tbody.empty();  // Clear existing table rows
+
+                  if (response.results.length) {
+                      response.results.forEach(entry => {
+                          tbody.append(`
+                              <tr style="cursor: pointer;">
+                                  <td class="ppa" onclick="showDetails('${entry.code}')">${entry.ppa}</td>
+                                  <td class="remaining-obligations" onclick="showDetails('${entry.code}')">₱${entry.remaining_obligations}</td>
+                                  <td class="total-obligations" onclick="showDetails('${entry.code}')">₱${entry.total_obligations}</td>
+                                  {% if request.user.is_superuser or request.user.department == 'Accountant Office' %}
+                                      <td>
+                                          ${entry.is_awarded ? `
+                                              <p class="status obligation" onclick="showAddDisbursementForm('${entry.code}')">Disburse</p>
+                                          ` : 'Project needs to be Awarded'}
+                                      </td>
+                                  {% endif %}
+                              </tr>
+                          `);
+                      });
+                  } else {
+                      tbody.append('<tr><td colspan="4">No projects found.</td></tr>');
+                  }
+              }
+          });
+      });
+  });
+</script>
+
+
+
+
+  </body>
+</html>

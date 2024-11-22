@@ -1,0 +1,228 @@
+{% load humanize %} {% load static %}
+<!DOCTYPE html>
+<html lang="en"> {% csrf_token %} <head>
+    <meta charset="UTF-8">
+    <link rel="shortcut icon" type="x-icon" href="{% static 'KwentasApp/img/logobrowser.jpg' %}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Obligations</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    <script src="https://kit.fontawesome.com/a81368914c.js"></script>
+
+    <link rel="stylesheet" type="text/css" href="{% static 'KwentasApp/css/continuing.css' %}">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+  </head>
+  <body>
+    <div class="overlay" id="overlay"></div>
+    <main class="table{% if not request.user.is_superuser %} non-superuser{% endif %}" id="customers_table">
+      <section class="table__header">
+        <h1>Obligations</h1>
+        <div class="sorting-options">
+          <form method="GET" action="">
+              <select name="sort" id="sort" onchange="this.form.submit()">
+                  <option value="" {% if not sort_option %}selected{% endif %}>Sort by</option>
+                  <option value="recent" {% if sort_option == 'recent' %}selected{% endif %}>Recently Added</option>
+                  <option value="oldest" {% if sort_option == 'oldest' %}selected{% endif %}>Oldest Added</option>
+              </select>
+              <noscript><button type="submit">Sort</button></noscript> <!-- For non-JS environments -->
+          </form>
+      </div>     
+      <div class="input-group">
+        <form method="GET" action="{% url 'search_projects' 'obligations'%}">
+            <input type="text" id="search-input" name="query" placeholder="Search Obligations...">
+        </form>
+        <div id="search-results"></div>
+    </div>
+        <div class="export__file">
+          <button type="submit" class="export__file-btn">Search</button>
+          </form>
+        </div>
+      </section>
+      <section class="table__body">
+        <table class="table">
+            <thead>
+                <tr>
+                  <th class="left-align">PPA</th>
+                    <th>Implementing Unit</th>
+                    <th>Code</th>
+                    <th>Year</th>
+                    <th>Remaining Obligations</th>
+                    <th>Total Obligations</th>
+                </tr>
+            </thead>
+            <tbody>
+              {% if matched_entries %}
+              {% for entry in matched_entries %}
+              <tr style="cursor: pointer;">
+                  <td class="ppa" onclick="showDetails('{{ entry.code }}')">{{ entry.ppa }}</td>
+                  <td class="implementing-unit" onclick="showDetails('{{ entry.code }}')">{{ entry.implementing_unit }}</td>
+                  <td class="code" onclick="showDetails('{{ entry.code }}')">{{ entry.code }}</td>
+                  <td class="year" onclick="showDetails('{{ entry.code }}')">{{ entry.year }}</td>
+                  <td class="year" onclick="showDetails('{{ entry.code }}')">₱{{ entry.remaining_obligations|intcomma }}</td>
+                  <td class="year" onclick="showDetails('{{ entry.code }}')">₱{{ entry.total_obligations|intcomma }}</td>
+              </tr>
+          {% endfor %}
+          {% else %}
+          {% if page_obj %}
+                {% for entry in page_obj %}
+                    <tr style="cursor: pointer;">
+                        <td class="ppa" onclick="showDetails('{{ entry.code }}')">{{ entry.ppa }}</td>
+                        <td class="implementing-unit" onclick="showDetails('{{ entry.code }}')">{{ entry.implementing_unit }}</td>
+                        <td class="code" onclick="showDetails('{{ entry.code }}')">{{ entry.code }}</td>
+                        <td class="year" onclick="showDetails('{{ entry.code }}')">{{ entry.year }}</td>
+                        <td class="year" onclick="showDetails('{{ entry.code }}')">₱{{ entry.remaining_obligations|intcomma }}</td>
+                        <td class="year" onclick="showDetails('{{ entry.code }}')">₱{{ entry.total_obligations|intcomma }}</td>
+                    </tr>
+                {% endfor %}
+                {% else %}
+                <tr>
+                  <td colspan="6">No projects found.</td>
+                </tr>
+              {% endif %}
+                {% endif %}
+            </tbody>
+        </table>
+    </section>
+    {% if not request.user.is_superuser %}
+    <style>
+      .left-align {
+          text-align: left !important;
+      }
+      .non-superuser .table th:nth-child(5), 
+      .non-superuser .table th:nth-child(6),
+      .non-superuser .table td:nth-child(5), 
+      .non-superuser .table td:nth-child(6) {
+          display: none;
+      }
+  </style>
+{% endif %}
+  <div class="back">
+      <a href="{% url 'homepage' %}">
+          <button class="back-btn">Back</button>
+      </a>
+  </div>
+  <div class="pagination">
+      <ul class="pagination-list">
+          {% if page_obj.has_previous %}
+              <li class="pagination-item"><a href="?page=1">&laquo; First</a></li>
+              <li class="pagination-item"><a href="?page={{ page_obj.previous_page_number }}">Previous</a></li>
+          {% else %}
+              <li class="pagination-item disabled"><span>&laquo; First</span></li>
+              <li class="pagination-item disabled"><span>Previous</span></li>
+          {% endif %}
+          <li class="pagination-item active"><span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span></li>
+          {% if page_obj.has_next %}
+              <li class="pagination-item"><a href="?page={{ page_obj.next_page_number }}">Next</a></li>
+              <li class="pagination-item"><a href="?page={{ page_obj.paginator.num_pages }}">Last &raquo;</a></li>
+          {% else %}
+              <li class="pagination-item disabled"><span>Next</span></li>
+              <li class="pagination-item disabled"><span>Last &raquo;</span></li>
+          {% endif %}
+      </ul>
+  </div>
+</main>
+    <!-- DETAILS  -->
+    <div class="details" id="details">
+      <a href="{% url 'obligations' %}">
+        <i class="material-icons x" id="exit">close</i>
+      </a>
+      <a href="{% url 'obligations' %}">
+        <h1 class="form-title">PROJECT DETAILS</h1>
+      </a>
+      <ul> {% for entry in all_entries %} <li class="entry-item" id="details-{{ entry.code }}" style="display: none;">
+          <div class="details-container">
+            <div class="main-user-info" id="main-detail">          
+              <div class="user-input-box">
+                <label >Remaining Obligation</label>
+                <p id="remainingObligations" class="user-text">₱{{ entry.remaining_obligations|intcomma }}</p>
+              </div>
+              <div class="user-input-box">
+                <label >Total Obligation</label>
+                <p id="totalObligations" class="user-text">₱{{ entry.total_obligations|intcomma }}</p>
+              </div>
+            </div>
+          </div>
+          <div class="tables-container">
+            <div class="table-box">
+              <span class="table-title">Added Obligation</span>
+              <br>
+              <div class="table-wrapper">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Name</th>
+                      <th>Amount</th>
+                      <th>Date</th>
+                    </tr>
+                  </thead>
+                  <tbody> {% for obligation in entry.obligation %} <tr>
+                      <td>{{ obligation.name }}</td>
+                      <td>₱{{ obligation.obligation|intcomma }}</td>
+                      <td>{{ obligation.date}}</td>
+                    </tr> {% endfor %} </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </li> {% endfor %} </ul>
+    </div>
+    <!------------------------------------------------------ JAVASCRIPT-------------------------------------------------->
+    <!-- PIE CHART JS -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Details js -->
+    <script>
+      function showDetails(code) {
+        document.getElementById('customers_table').style.filter = 'blur(10px)';
+        document.getElementById('overlay').style.display = 'block';
+        var details = document.getElementsByClassName('entry-item');
+        for (var i = 0; i < details.length; i++) {
+          details[i].style.display = 'none';
+        }
+        document.getElementById('details-' + code).style.display = 'block';
+        document.getElementById('details').style.display = 'block';
+      }
+    </script>
+
+
+
+  
+  </body>
+
+  <script>
+    $(document).ready(function() {
+        $('#search-input').on('input', function() {
+            let query = $(this).val();
+            $.ajax({
+                url: "{% url 'search_projects' 'obligations' %}",  // Adjust URL if needed
+                data: { query: query },
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }, // Mark it as AJAX
+                success: function(response) {
+                    const tbody = $('table.table tbody');  // Target the table's <tbody>
+                    tbody.empty();  // Clear existing table rows
+  
+                    if (response.results.length) {
+                        response.results.forEach(entry => {
+                            tbody.append(`
+                                <tr style="cursor: pointer;">
+    <td class="ppa" onclick="showDetails('${entry.code}')">${entry.ppa}</td>
+    <td class="implementing-unit" onclick="showDetails('${entry.code}')">${entry.implementing_unit}</td>
+    <td class="code" onclick="showDetails('${entry.code}')">${entry.code}</td>
+    <td class="year" onclick="showDetails('${entry.code}')">${entry.year}</td>
+    <td class="year" onclick="showDetails('${entry.code}')">₱${entry.remaining_obligations}</td>
+    <td class="year" onclick="showDetails('${entry.code}')">₱${entry.total_obligations}</td>
+</tr>
+
+                            `);
+                        });
+                    } else {
+                        tbody.append('<tr><td colspan="6">No projects found.</td></tr>');
+                    }
+                }
+            });
+        });
+    });
+  </script>
+</html>

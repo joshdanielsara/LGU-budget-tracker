@@ -1,0 +1,168 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="shortcut icon" type="x-icon" href="{% static 'KwentasApp/img/logobrowser.jpg' %}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kwentas Klaras - Login</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'KwentasApp/css/login.css' %}">
+    <link href="https://fonts.googleapis.com/css?family=Poppins:600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://kit.fontawesome.com/a81368914c.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script> 
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <div class="login-content">
+                <form action="{% url 'login' %}" method="post">
+                    {% csrf_token %}
+                    <img src="{% static 'KwentasApp/img/logo.png' %}" alt="User Avatar">
+                    <h2 class="title">Welcome to Kwentas Klaras (Digital PMIS) v1.0</h2>
+                    <div class="input-div one">
+                        <div class="i">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div class="div">
+                            <h5>User ID</h5>
+                            <input type="text" class="input" id="username-input" name="username" required>
+                            <h6 id="userNote" style="margin-top: 55px; white-space: nowrap;text-align: left; color: #cc0000;">Caps Lock is ON</h6>
+                        </div>
+                    </div>
+                    <div class="input-div pass">
+                        <div class="i clickable" id="show-password">
+                            <i class="fas fa-eye"></i>
+                        </div>
+                        <div class="div">
+                            <h5>Password</h5>
+                            <input type="password" class="input" id="password-input" name="password" required>
+                            <h6 id="passwordNote" style="margin-top: 55px; white-space: nowrap;text-align: left; color: #cc0000;">Caps Lock is ON</h6>
+                        </div>
+                    </div>
+                    <a href="{% url 'forgot-password' %}">
+                        <h4>Forgot Password?</h4>
+                    </a>
+                    <input type="submit" class="btn" value="Login">
+                </form>
+            </div>
+        </div>
+    </div>
+<script type="text/javascript" src="{% static 'KwentasApp/js/main.js' %}"></script>
+<script>
+    document.getElementById('show-password').addEventListener('click', function () {
+        var passwordInput = document.getElementById('password-input');
+        var icon = document.querySelector('#show-password i');
+        if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+            icon.classList.remove('fa-eye');
+            icon.classList.add('fa-eye-slash');
+        } else {
+            passwordInput.type = 'password';
+            icon.classList.remove('fa-eye-slash');
+            icon.classList.add('fa-eye');
+        }
+    });
+</script>
+<script>
+    const inputs = document.querySelectorAll(".input");
+
+    function addcl(){
+        let parent = this.parentNode.parentNode;
+        parent.classList.add("focus");
+    }
+
+    function remcl(){
+        let parent = this.parentNode.parentNode;
+        if(this.value == ""){
+            parent.classList.remove("focus");
+        }
+    }
+
+    inputs.forEach(input => {
+        input.addEventListener("focus", addcl);
+        input.addEventListener("blur", remcl);
+    });
+</script>
+{% if messages %}
+{% for message in messages %}
+    <script type="text/javascript">
+        document.addEventListener('DOMContentLoaded', function() {
+            // Create an array to hold messages
+            var messages = [];
+
+            // Push each message into the array
+            
+                messages.push({
+                    'tag': '{{ message.tags|escapejs }}',
+                    'text': '{{ message|escapejs }}'
+                });
+            
+
+            // Iterate through the messages array and display SweetAlert for errors
+            messages.forEach(function(message) {
+                if (message.tag === 'error') {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops...',
+                        text: message.text,
+                        confirmButtonColor: '#3085d6'
+                    });
+                }
+            });
+        });
+    </script>
+    {% endfor %}
+{% endif %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const passwordInput = document.getElementById('password-input');
+        const capsLockAlert = document.getElementById('passwordNote');
+
+        // Function to check if Caps Lock is on
+        function checkCapsLock(event) {
+            const capsLockOn = event.getModifierState && event.getModifierState('CapsLock');
+            capsLockAlert.style.display = capsLockOn ? 'block' : 'none';
+        }
+
+        // Hide the caps lock alert by default
+        capsLockAlert.style.display = 'none';
+
+        // Event listener for keyup event on password input
+        passwordInput.addEventListener('keyup', function(event) {
+            checkCapsLock(event);
+        });
+
+        // Event listener for keydown event on password input (for handling Caps Lock on page load)
+        passwordInput.addEventListener('keydown', function(event) {
+            checkCapsLock(event);
+        });
+    });
+</script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const usernameInput = document.getElementById('username-input');
+        const userNote = document.getElementById('userNote');
+
+        // Function to check if Caps Lock is on
+        function checkCapsLock(event) {
+            const capsLockOn = event.getModifierState && event.getModifierState('CapsLock');
+            userNote.style.display = capsLockOn ? 'block' : 'none';
+        }
+
+        // Hide the caps lock alert by default
+        userNote.style.display = 'none';
+
+        // Event listener for keyup event on username input
+        usernameInput.addEventListener('keyup', function(event) {
+            checkCapsLock(event);
+        });
+
+        // Event listener for keydown event on username input (for handling Caps Lock on page load)
+        usernameInput.addEventListener('keydown', function(event) {
+            checkCapsLock(event);
+        });
+    });
+</script>
+</body>
+</html>

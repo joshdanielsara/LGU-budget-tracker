@@ -1,0 +1,421 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="shortcut icon" type="x-icon" href="{% static 'KwentasApp/img/logobrowser.jpg' %}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kwentas Klaras Admin Registration</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'KwentasApp/css/register.css' %}">
+    <link href="https://fonts.googleapis.com/css?family=Poppins:600&display=swap" rel="stylesheet">
+    <script src="https://kit.fontawesome.com/a81368914c.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script> 
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <div class="img">
+            <img src="{% static 'KwentasApp/img/logo.png' %}">
+        </div>
+        <div class="login-content">
+            <form id="dataForm" action="{% url 'register' %}" method="post">
+                {% csrf_token %}
+                <h2 class="title">Registration</h2>
+                <div class="input-div">
+                    <div class="i">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div class="div">
+                        <h5>Account Username</h5>
+                        <input type="text" name="username" class="input" required>
+                        <h6 id="usernameNote" style="display: none; margin-top: 55px; text-align: left; white-space: nowrap; color: #cc0000;">Note: Dont use username as your password.</h6>
+                    </div>
+                </div>
+                <div class="input-div">
+                    <div class="i">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div class="div">
+                        <h5>Name</h5>
+                        <input type="text" name="name" class="input" required>
+                    </div>
+                </div>
+                <div class="input-div">
+                    <div class="i">
+                        <i class="fas fa-envelope"></i>
+                    </div>
+                    <div class="div">
+                        <h5>Employee Email</h5>
+                        <input type="email" name="email" class="input" required>
+                    </div>
+                </div>
+                <div class="input-div">
+                    <div class="i">
+                        <i class="fas fa-building"></i>
+                    </div>
+                    <div class="drop">
+                        <input type="text" name="department" placeholder="Department" onclick="toggleDropdown()" id="departmentInput" readonly required>
+                        <i class="fas fa-chevron-down" id="dropdownArrow" onclick="toggleDropdown()"></i>
+                        <ul class="content" id="departmentOptions">
+                            <li onclick="selectOption('Mayor\'s Office')">Mayor's Office</li>
+                            <li onclick="selectOption('Tourism Office')">Tourism Office</li>
+                            <li onclick="selectOption('PESO Office')">PESO Office</li>
+                            <li onclick="selectOption('MDRRMO')">MDDRMO</li>
+                            <li onclick="selectOption('Sanguniang Baranggay Office')">Sanguniang Barangay Office</li>
+                            <li onclick="selectOption('MPDC Office')">MPDC</li>
+                            <li onclick="selectOption('MCR Office')">MCR Office</li>
+                            <li onclick="selectOption('MBO Office')">MBO Office</li>
+                            <li onclick="selectOption('Accountant Office')">Accountant Office</li>
+                            <li onclick="selectOption('Assessor Office')">Assessor's Office</li>
+                            <li onclick="selectOption('MHO Office')">MHO Office</li>
+                            <li onclick="selectOption('Parks & Plaza')">Parks & Plaza</li>
+                            <li onclick="selectOption('MSWD Office')">MSWD Office</li>
+                            <li onclick="selectOption('MENRO Office')">MENRO Office</li>
+                            <li onclick="selectOption('MO')">MO</li>
+                            <li onclick="selectOption('Streets & Bridges')">Streets & Bridges</li>
+                            <li onclick="selectOption('LDF')">LDF</li>
+                            <li onclick="selectOption('Waterworks')">Waterworks</li>
+                            <li onclick="selectOption('Markets')">Markets</li>
+                            <li onclick="selectOption('Zero Waste')">Zero Waste</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="input-div">
+                    <div class="i clickable show-password" id="show-password-1">
+                        <i class="fas fa-lock"></i>
+                    </div>
+                    <div class="div">
+                        <h5>Password</h5>
+                        <input type="password" class="input password-input" id="password-input" name="password1" required>
+                        <h6 id="capsLockNote" style="display: none; margin-top: 55px; white-space: nowrap; text-align: left; color: #cc0000;">Caps Lock is ON</h6>
+                        <h6 id="passwordRuleNote" style="margin-top: 55px; white-space: nowrap; text-align: left; color: #cc0000;">Note: Password should not contain the username or email</h6>
+                    </div>
+                </div>
+                <div class="input-div">
+                    <div class="i clickable show-password" id="show-password-2">
+                        <i class="fas fa-lock"></i>
+                    </div>
+                    <div class="div">
+                        <h5>Enter password again</h5>
+                        <input type="password" class="input password-input" id="password-input-2" name="password2" required>
+                        <h6 id="capsLockNote2" style="display: none; margin-top: 55px; white-space: nowrap; text-align: left; color: #cc0000;">Caps Lock is ON</h6>
+                        <h6 id="passwordMatchNote" style="display: none; margin-top: 55px; white-space: nowrap; text-align: left; color: green;">Passwords match!</h6>
+                        <h6 id="passwordMismatchNote" style="display: none; margin-top: 55px; white-space: nowrap; text-align: left; color: #cc0000;">Passwords do not match</h6>
+                    </div>
+                </div>
+                <div class="input-div">
+                    <div class="i">
+                        <i class="fas fa-key"></i>
+                    </div>
+                    <div class="div">
+                        <h5>OTP Code</h5>
+                        {% csrf_token %}
+                        <input type="text" name="verification_code" id="verificationCode" class="input" required>
+                        <button type="button" class="trigger-button" onclick="requestVerificationCode()">Send Code</button>
+                    </div>
+                </div>       
+                <input type="submit" class="btn" value="Submit">
+                <a href="#" id="cancelButton" class="btn-cancel">Cancel</a>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function requestVerificationCode() {
+            const email = document.querySelector('input[name="email"]').value;  // Get email from the input field
+    
+            // Validate email format
+            if (!validateEmail(email)) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Invalid Email',
+                    text: 'Please enter a valid email address.',
+                });
+                return;
+            }
+    
+            // Show loading spinner while request is in progress
+            Swal.fire({
+            title: 'Sending verification code...',
+            html: `
+                <div style="display: flex; justify-content: center; align-items: center; flex-direction: column;">
+                    <img src="{% static 'KwentasApp/img/loaderemail.gif' %}" style="width: 200px; height: 200px;" />
+                    <p style="font-size: 16px; color: #555;">Please wait for a moment.</p>
+                </div>
+            `,
+            allowOutsideClick: false,
+            showConfirmButton: false
+        });
+    
+            // Send a POST request to the backend to send the verification code
+            fetch('/send_verification_code/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')  // Include CSRF token
+                },
+                body: JSON.stringify({ email: email })  // Send the email to the server
+            })
+            .then(response => response.json())
+            .then(data => {
+                Swal.close();  // Close loading spinner
+                if (data.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Code Sent!',
+                        text: 'The verification code has been sent to your email.',
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error!',
+                        text: data.error,
+                    });
+                }
+            })
+            .catch(error => {
+                Swal.close();  // Close loading spinner
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Network Error!',
+                    text: 'Unable to connect to the server. Please check your internet connection.',
+                });
+            });
+        }
+    
+        // Function to validate email format
+        function validateEmail(email) {
+            const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return re.test(String(email).toLowerCase());
+        }
+    
+        // Function to get CSRF token
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+    </script>
+    
+
+    <script>
+  document.getElementById('dataForm').addEventListener('submit', function(event) {
+    event.preventDefault();  // Prevent default form submission
+    const formData = new FormData(this);
+    // Make an AJAX request to submit the form
+    fetch(this.action, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            // Show success message with SweetAlert
+            Swal.fire({
+                icon: 'success',
+                title: 'Success!',
+                text: data.message,
+            }).then(() => {
+                window.location.href = "{% url 'register_page' %}";
+            });
+        } else {
+            // Display specific form errors with SweetAlert
+            let errorMessages = '';
+            for (const [field, errors] of Object.entries(data.errors)) {
+                errorMessages += `${field}: ${errors.join(', ')}\n`;
+            }
+            
+            Swal.fire({
+                icon: 'error',
+                title: 'Oops...',
+                text: errorMessages || data.message  // Show form errors or general error
+            });
+        }
+    })
+    .catch(error => {
+        Swal.fire({
+            icon: 'error',
+            title: 'Error!',
+            text: 'An error occurred during form submission.'
+        });
+    });
+});
+        document.getElementById('cancelButton').addEventListener('click', function(event) {
+            event.preventDefault();
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "You will lose all unsaved data!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, cancel it!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = "{% url 'homepage' %}";
+                }
+            });
+        });
+    
+        function toggleDropdown() {
+            const dropdown = document.getElementById('departmentOptions');
+            dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+        }
+    
+        function selectOption(option) {
+            document.getElementById('departmentInput').value = option;
+            document.getElementById('departmentOptions').style.display = 'none';
+        }
+    
+        const inputs = document.querySelectorAll(".input");
+    
+        function addcl(){
+            let parent = this.parentNode.parentNode;
+            parent.classList.add("focus");
+        }
+    
+        function remcl(){
+            let parent = this.parentNode.parentNode;
+            if(this.value == ""){
+                parent.classList.remove("focus");
+            }
+        }
+    
+        inputs.forEach(input => {
+            input.addEventListener("focus", addcl);
+            input.addEventListener("blur", remcl);
+        });
+
+        document.querySelectorAll('.show-password').forEach(function (element) {
+            element.addEventListener('click', function () {
+                var passwordInput = element.nextElementSibling.querySelector('.password-input');
+                var icon = element.querySelector('i');
+                if (passwordInput.type === 'password') {
+                    passwordInput.type = 'text';
+                    icon.classList.remove('fa-lock');
+                    icon.classList.add('fa-unlock-alt');
+                } else {
+                    passwordInput.type = 'password';
+                    icon.classList.remove('fa-unlock-alt');
+                    icon.classList.add('fa-lock');
+                }
+            });
+        });
+    </script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const passwordInput = document.getElementById('password-input');
+        const capsLockNote = document.getElementById('capsLockNote');
+        const passwordRuleNote = document.getElementById('passwordRuleNote');
+
+        // Function to check if Caps Lock is on
+        function checkCapsLock(event) {
+            const capsLockOn = event.getModifierState && event.getModifierState('CapsLock');
+            capsLockNote.style.display = capsLockOn ? 'block' : 'none';
+            passwordRuleNote.style.display = capsLockOn ? 'none' : 'block';
+        }
+
+        // Hide the caps lock note and password rule note by default
+        capsLockNote.style.display = 'none';
+        passwordRuleNote.style.display = 'none';
+
+        // Event listener for keyup event on password input
+        passwordInput.addEventListener('keyup', function(event) {
+            checkCapsLock(event);
+        });
+
+        // Event listener for keydown event on password input (for handling Caps Lock on page load)
+        passwordInput.addEventListener('keydown', function(event) {
+            checkCapsLock(event);
+        });
+
+        // Event listener for click event on password input to show password rule note
+        passwordInput.addEventListener('click', function() {
+            passwordRuleNote.style.display = 'block';
+        });
+
+        // Event listener for blur event on password input to hide password rule note
+        passwordInput.addEventListener('blur', function() {
+            passwordRuleNote.style.display = 'none';
+        });
+    });
+</script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const passwordInput1 = document.getElementById('password-input');
+        const capsLockNote1 = document.getElementById('capsLockNote');
+        const passwordInput2 = document.querySelector('input[name="password2"]');
+        const capsLockNote2 = document.getElementById('capsLockNote2');
+
+        // Function to check if Caps Lock is on for password1
+        function checkCapsLock1(event) {
+            const capsLockOn = event.getModifierState && event.getModifierState('CapsLock');
+            capsLockNote1.style.display = capsLockOn ? 'block' : 'none';
+        }
+
+        // Function to check if Caps Lock is on for password2
+        function checkCapsLock2(event) {
+            const capsLockOn = event.getModifierState && event.getModifierState('CapsLock');
+            capsLockNote2.style.display = capsLockOn ? 'block' : 'none';
+        }
+
+        // Hide the caps lock notes by default
+        capsLockNote1.style.display = 'none';
+        capsLockNote2.style.display = 'none';
+
+        // Event listeners for keyup and keydown events on password1
+        passwordInput1.addEventListener('keyup', function(event) {
+            checkCapsLock1(event);
+        });
+        passwordInput1.addEventListener('keydown', function(event) {
+            checkCapsLock1(event);
+        });
+
+        // Event listeners for keyup and keydown events on password2
+        passwordInput2.addEventListener('keyup', function(event) {
+            checkCapsLock2(event);
+        });
+        passwordInput2.addEventListener('keydown', function(event) {
+            checkCapsLock2(event);
+        });
+    });
+</script>
+
+<script>
+    const passwordInput1 = document.getElementById('password-input');
+    const passwordInput2 = document.getElementById('password-input-2');
+    const passwordMatchNote = document.getElementById('passwordMatchNote');
+    const passwordMismatchNote = document.getElementById('passwordMismatchNote');
+    
+    // Add event listeners to check if passwords match
+    passwordInput2.addEventListener('input', function() {
+        if (passwordInput2.value === '') {
+            // Hide both match and mismatch notes if the second password field is empty
+            passwordMatchNote.style.display = 'none';
+            passwordMismatchNote.style.display = 'none';
+        } else if (passwordInput1.value === passwordInput2.value) {
+            passwordMatchNote.style.display = 'block';  // Show matching message
+            passwordMismatchNote.style.display = 'none';  // Hide mismatch message
+        } else {
+            passwordMatchNote.style.display = 'none';   // Hide matching message
+            passwordMismatchNote.style.display = 'block'; // Show mismatch message
+        }
+    });
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,581 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
+
+* {
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+  font-family: 'Poppins', sans-serif;
+}
+
+section {
+  height: 100vh;
+  width: 100%;
+  display: grid;
+  place-items: center;
+}
+
+.section-heading {
+  font-size: 25px;
+  font-style: bold;
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+}
+.logo-image {
+  margin-top: 0; /* Reset margin-top */
+  margin-left: 0; /* Reset margin-left */
+  height: 40px; /* Adjust height as needed */
+  /* Additional styling if needed */
+}
+.column {
+  width: 100%;
+  padding: 0 1em 1em 1em;
+  text-align: center;
+}
+
+.card {
+  width: 100%;
+  min-height: 350px;
+  height: 360px;
+  padding: 2em 1.5em;
+  background: #ffffff; /* Removed gradient and kept a plain background */
+  border-radius: 50px;
+  cursor: pointer;
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1f194c;
+  margin: 1em 0;
+}
+
+p {
+  color: #575a7b;
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  letter-spacing: 0.03em;
+}
+
+.icon-wrapper {
+  background-color: #007FFF            ;
+  position: relative;
+  margin: auto;
+  font-size: 30px;
+  height: 2.5em;
+  width: 2.5em;
+  color: #ffffff;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  transition: 0.5s;
+}
+
+.card:hover {
+  transform: translateY(-10px); /* Simple hover animation */
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15); /* Adding shadow on hover */
+}
+
+.card:hover .icon-wrapper {
+  background-color: #007FFF            ; /* Keeping the original background color */
+  color: #ffffff; /* Keeping the original icon color */
+}
+
+.card:hover h3, 
+.card:hover p {
+  color: #1f194c; /* Keeping the original text color */
+}
+
+@media screen and (min-width: 768px) {
+  section {
+    padding: 0 2em;
+  }
+  .column {
+    flex: 0 50%;
+    max-width: 50%;
+  }
+  .btn,
+  .btn-bottom-right {
+    width: auto;
+    padding: 0.1rem 1rem;
+    font-size: 0.8rem;
+  }
+  h3 {
+    white-space: nowrap;
+  }
+  .btn {
+    width: 70%;
+  }
+}
+
+@media screen and (max-width: 991px) {
+  h3 {
+    white-space: wrap;
+  }
+}
+
+@media screen and (min-width: 992px) {
+  section {
+    padding: 1em 3em;
+  }
+  .column {
+    flex: 0 0 33.33%;
+    max-width: 33.33%;
+  }
+  h3 {
+    white-space: wrap;
+  }
+}
+
+.btn {
+  display: block;
+  width: auto; /* Adjust as needed */
+  min-width: 40%; /* Reduced min-width */
+  position: relative;
+  height: 30px;
+  border-radius: 25px;
+  outline: none;
+  border: none;
+  background-image: linear-gradient(to right, #007FFF            , #007FFF            , #007FFF            );
+  background-size: 200%;
+  font-size: 1.0rem;
+  color: #ffffff;
+  font-family: 'Poppins', sans-serif;
+  text-transform: uppercase;
+  margin: 1rem auto;
+  cursor: pointer;
+  transition: 0.5s;
+}
+
+
+.btn:hover {
+  transform: scale(1.15); /* Hover scaling effect */
+}
+
+.btn {
+  display: block;
+  width: auto; /* Adjust as needed */
+  min-width: 55%; /* Increased min-width for wider buttons */
+  position: relative;
+  height: 30px;
+  border-radius: 25px;
+  outline: none;
+  border: none;
+  background-image: linear-gradient(to right, #007FFF            , #007FFF            , #007FFF            );
+  background-size: 200%;
+  font-size: 1.0rem;
+  color: #ffffff;
+  font-family: 'Poppins', sans-serif;
+  text-transform: uppercase;
+  margin: 1rem auto;
+  cursor: pointer;
+  transition: 0.5s;
+}
+
+.btn-bottom-right:hover {
+  transform: scale(1.15); /* Hover scaling effect */
+}
+
+:root {
+  --dark: #34495E;
+  --light: #ffffff;
+  --success: #0ABF30;
+  --error: #E24D4C;
+  --warning: #E9BD0C;
+  --info: #3498DB;
+}
+
+body {
+  background: #eee;
+  opacity: 0;
+  transition: opacity 0.5s;
+}
+
+body.page-loaded {
+  opacity: 1;
+}
+
+.buttons .btn {
+  border: none;
+  outline: none;
+  cursor: pointer;
+  margin: 0 5px;
+  color: var(--light);
+  font-size: 1.2rem;
+  padding: 10px 20px;
+  border-radius: 4px;
+}
+
+@media screen and (max-width: 530px) {
+  .notifications {
+    width: 95%;
+  }
+  .notifications .toast {
+    width: 100%;
+    font-size: 1rem;
+    margin-left: 20px;
+  }
+  .buttons .btn {
+    margin: 0 1px;
+    font-size: 1.1rem;
+    padding: 8px 15px;
+  }
+  .btn {
+    min-width: 60%; /* Adjusted min-width for wider buttons on small screens */
+  }
+  .dropdown-toggle {
+    min-width: 75%; /* Adjusted min-width for wider dropdown button on small screens */
+  }
+}
+
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes reloadAnimation {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.page-loaded {
+  animation: fadeIn 1s ease forwards;
+}
+
+.reload-icon {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  animation: reloadAnimation 2s linear infinite;
+}
+
+
+/* Base Navbar Styles */
+.navbar {
+  display: flex;
+  width: 100%;
+  justify-content: space-between; /* Keep space between left and right */
+  align-items: center;
+  padding: 0.75rem 2rem; /* Default padding for the navbar */
+  border-radius: 10px; /* Rounded corners */
+  background-color: #007FFF            ; /* Adjust background color as needed */
+  color: #fff; /* Adjust text color as needed */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+  position: relative; /* Ensure positioning context for the mobile menu */
+}
+
+/* Navbar Left and Right Styles */
+.navbar-left, .navbar-right {
+  display: flex;
+  align-items: center;
+}
+
+.navbar-left {
+  justify-content: center;
+  margin-left: 9px;
+  flex: 1;
+}
+
+.navbar-left span {
+  font-size: 25px; /* Adjust size as needed */
+  font-weight: bold; /* Makes text bold */
+  font-family: 'Poppins', sans-serif; /* Choose a heavier font family if needed */
+}
+
+.navbar-right {
+  justify-content: center;
+  margin-right: 20px;
+  flex: 1;
+}
+
+.datetime-display {
+  font-size: 18px;
+  color: #fff; /* Adjust color as needed */
+  margin-right: 30px;
+}
+
+.logged-in {
+  font-size: 18px;
+  font-family: 'Poppins', sans-serif;
+  margin: 0;
+  color: white;
+}
+
+/* Mobile Navbar Styles */
+@media (max-width: 768px) {
+  .navbar {
+    justify-content: flex-start; /* Align items to the left */
+    padding: 0.25rem 1rem; /* Reduce padding for a smaller height */
+  }
+
+  .navbar-right {
+    display: none; /* Hide the right section on mobile */
+  }
+
+  .navbar-left {
+    width: 100%; /* Take up full width */
+    margin: 0; /* Remove margin */
+  }
+
+  .navbar-left span {
+    font-size: 18px; /* Reduce brand font size for mobile */
+  }
+
+  .datetime-display {
+    font-size: 14px; /* Smaller font size for mobile */
+  }
+
+  .logged-in {
+    font-size: 14px; /* Smaller font size for mobile */
+  }
+
+  .navbar-menu {
+    display: none; /* Hide the menu by default */
+  }
+
+  /* Hamburger Menu */
+  .navbar-toggler {
+    display: block; /* Show hamburger menu on mobile */
+    background-color: transparent;
+    border: none;
+    font-size: 1.5rem;
+    color: #fff;
+    cursor: pointer;
+  }
+
+  /* Hamburger Menu Icon */
+  .navbar-toggler::before {
+    content: '☰'; /* Hamburger icon */
+  }
+}
+
+/* Ensure navbar-toggler is hidden on larger screens */
+@media (min-width: 769px) {
+  .navbar-toggler {
+    display: none; /* Hide on larger screens */
+  }
+}
+
+
+
+
+.custom-toast-container {
+  margin-right: 60px;
+}
+
+@media (max-width: 480px) {
+  .custom-toast-container {
+      /* Move the toast up on small screens */
+      top: 30%;  /* Adjust this value to move the toast higher */
+      left: 50%;
+      transform: translate(-50%, -30%);  /* Adjust this value accordingly */
+      max-width: 100%;
+      font-size: 14px;
+  }
+}
+
+.account-buttons-container {
+  display: flex;
+  flex-direction: column; /* Stacks items vertically */
+  align-items: center; /* Centers the buttons horizontally */
+  gap: 20px; /* Adds consistent spacing between the buttons */
+}
+
+/* Dropdown and Non-Dropdown Container Styles */
+.dropdown {
+  position: relative;
+  width: 100%; /* Full width for the dropdown container */
+}
+
+.non-dropdown {
+  width: 100%; /* Full width for non-dropdown buttons */
+  text-align: center;
+}
+
+/* Button Styles (account and dropdown toggle) */
+.account, .dropdown-toggle {
+  display: block;
+  width: 100%; /* Full width within the container */
+  max-width: 250px; /* Set a wider max width for buttons */
+  border-radius: 25px;
+  outline: none;
+  border: none;
+  background-image: linear-gradient(to right, #007FFF            , #007FFF            , #007FFF            );
+  background-size: 200%;
+  font-size: 1.0rem;
+  color: #ffffff;
+  font-family: 'Poppins', sans-serif;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: 0.5s;
+}
+
+.account-buttons-container button {
+  width: 100%;
+  max-width: 250px; /* Ensure consistent button size */
+  margin: 0 auto;
+}
+
+/* Hover effect for buttons */
+.dropdown-toggle:hover {
+  transform: scale(1.15); /* Hover scaling effect */
+}
+
+/* Dropdown Menu Styling */
+.dropdown-menu {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 100;
+  background-color: #fff;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+  z-index: 99999;
+  width: 110%; /* Fixed smaller width for the dropdown menu */
+  padding: 10px; /* Add some padding for a clean look */
+  border-radius: 25px;
+}
+
+/* Dropdown Menu Items */
+.dropdown-menu .dropdown-item {
+  display: block;
+  padding: 10px 20px;
+  text-align: left;
+  align-items: left;
+  margin-right: 500px;
+  font-size: 1.0rem;
+  text-wrap: nowrap;
+  color: #007FFF            ;
+  text-decoration: none;
+  border: none;
+  background: none;
+  width: 70%; /* Full width within the dropdown menu */
+}
+
+.dropdown-menu .dropdown-item:hover {
+  background-color: #f1f1f1; /* Hover effect on items */
+}
+
+/* Show the dropdown menu on hover */
+.dropdown:hover .dropdown-menu {
+  display: block;
+}
+
+/* Responsive styles */
+@media screen and (max-width: 768px) {
+  .account-buttons-container {
+    gap: 10px; /* Adjust gap for smaller screens */
+  }
+
+  .account, .dropdown-toggle {
+    max-width: 100%; /* Buttons take full width on smaller screens */
+  }
+
+  .dropdown-menu {
+    text-wrap:wrap;
+    width: 110%; /* Full width dropdown menu on smaller screens */
+  }
+}
+
+/* Target Notyf container for all notifications */
+.notyf {
+  right: 60px !important; /* Moves the notification further to the left */
+  top: 20px !important;    
+}
+
+/* Mobile and Tablet View: Positioning the notification at the very top */
+@media (max-width: 768px) {
+  .mobile-top-notyf .notyf__toast {
+      top: 0 !important; /* Override any existing 'top' values */
+  }
+}
+
+.transparent-swal {
+  background: transparent !important; /* Makes the background transparent */
+  box-shadow: none !important; /* Removes the box shadow */
+  padding: 0 !important; /* Removes padding */
+}
+
+/* Loader Styles */
+#loader-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw; /* Use viewport width */
+  height: 100vh; /* Use viewport height */
+  background: rgba(255, 255, 255, 0.8); /* Slightly transparent white background */
+  backdrop-filter: blur(10px); /* Apply background blur */
+  display: flex;
+  flex-direction: column; /* Stack items vertically */
+  justify-content: center;
+  align-items: center;
+  z-index: 9999; /* High z-index to overlay everything */
+}
+
+.loader {
+  border: 10px solid #f3f3f3; /* Light gray border */
+  border-top: 10px solid #3498db; /* Blue border for the top */
+  border-radius: 50%;
+  width: 80px; /* Increased size for desktop */
+  height: 80px; /* Increased size for desktop */
+  animation: spin 1s linear infinite; /* Spinning effect */
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Loading text styles */
+.loading-text {
+  margin-top: 20px; /* Space between loader and text */
+  font-size: 18px; /* Font size for loading text */
+  color: #3498db; /* Color for loading text */
+  text-align: center; /* Center align the text */
+}
+
+/* Hide the loader after page load */
+.page-loaded #loader-container {
+  display: none;
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+  .loader {
+    width: 60px; /* Larger size for mobile */
+    height: 60px; /* Larger size for mobile */
+    border-width: 8px; /* Thinner border for mobile */
+  }
+  
+  .loading-text {
+    font-size: 16px; /* Smaller font size for mobile */
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
